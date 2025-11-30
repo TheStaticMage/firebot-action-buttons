@@ -9,6 +9,9 @@ export default tseslint.config(
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylistic,
     {
+        ignores: ['**/*.js', '**/*.jsx', 'src/resources/**'],
+    },
+    {
         files: ['**/*.ts', '**/*.tsx'],
         languageOptions: {
             parserOptions: {
@@ -24,6 +27,7 @@ export default tseslint.config(
             '@typescript-eslint/ban-ts-comment': 'warn',
             '@typescript-eslint/consistent-generic-constructors': 'warn',
             '@typescript-eslint/no-empty-function': 'warn',
+            '@typescript-eslint/no-redundant-type-constituents': 'error',
             '@typescript-eslint/no-this-alias': 'warn',
             '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
             '@typescript-eslint/restrict-template-expressions': 'off',

@@ -2,7 +2,7 @@
 
 | Plugin Version | Minimum Firebot Version |
 | --- | --- |
-| 0.1.0+ | 5.65 |
+| 0.0.1+ | 5.65 |
 
 ## Installation: Plugin
 

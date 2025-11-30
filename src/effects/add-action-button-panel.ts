@@ -1,0 +1,454 @@
+import { Firebot } from '@crowbartools/firebot-custom-scripts-types';
+import { EffectScope } from '@crowbartools/firebot-custom-scripts-types/types/effects';
+import { CustomChatPanelPosition, InjectChatPanelData } from '@crowbartools/firebot-custom-scripts-types/types/modules/custom-chat-panel-manager';
+import { randomUUID } from 'crypto';
+import { actionButtonManager } from '../internal/action-button-manager';
+import { ActionButtonDefinition, ButtonAlignment } from '../internal/action-button-types';
+import { firebot, logger } from '../main';
+
+declare const angular: any;
+
+interface EffectModel {
+    mode: 'create' | 'update';
+    panelId?: string;
+    positionType?: 'append' | 'prepend' | 'afterMessage' | 'beforeMessage';
+    messageId?: string;
+    actionButtons: ActionButtonDefinition[];
+}
+
+export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
+    definition: {
+        id: 'action-buttons:add-action-button-panel',
+        name: 'Create/Update Action Button Panel',
+        description: 'Adds an interactive action button panel to the chat feed',
+        icon: 'far fa-plus-square',
+        categories: ["common", "chat based", "advanced"],
+        outputs: [
+            {
+                label: 'Panel ID',
+                description: 'The ID of the created action button panel',
+                defaultName: 'panelId'
+            },
+            {
+                label: 'Buttons',
+                description: 'Map of button IDs to their names',
+                defaultName: 'buttons'
+            }
+        ]
+    },
+    optionsTemplate: `
+        <style>
+            .control-fb-inline + .control-fb-inline {
+                margin-top: 15px;
+            }
+            .control-fb-label {
+                font-weight: 700;
+            }
+            h4.control-fb-label {
+                font-size: 0.9em;
+            }
+            .action-button-item {
+                border: 1px solid #444;
+                padding: 15px;
+                margin-bottom: 10px;
+                border-radius: 4px;
+                background-color: #2a2a2a;
+                color: #e0e0e0;
+            }
+            .action-button-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                cursor: pointer;
+                user-select: none;
+                font-size: 1.1em;
+            }
+            .action-button-content.expanded {
+                margin-top: 10px;
+            }
+            .action-button-header:hover {
+                opacity: 0.8;
+            }
+            .action-button-header strong {
+                color: #e0e0e0;
+            }
+            .action-button-content {
+                display: none;
+            }
+            .action-button-content.expanded {
+                display: block;
+            }
+            .collapse-icon {
+                color: #888;
+                transition: transform 0.2s;
+            }
+            .collapse-icon.expanded {
+                transform: rotate(90deg);
+            }
+            .action-button-header .btn-secondary {
+                background-color: #3a3a3a;
+                border-color: #2f2f2f;
+                color: #f0f0f0;
+            }
+        </style>
+        <eos-container header="Effect Mode">
+            <div class="control-fb-inline">
+                <firebot-radio-container>
+                    <firebot-radio label="Create New Panel" model="effect.mode" value="'create'" />
+                    <firebot-radio label="Update Existing Panel" model="effect.mode" value="'update'" />
+                </firebot-radio-container>
+            </div>
+
+            <div class="control-fb-inline" ng-show="effect.mode === 'update'">
+                <h4 class="control-fb-label">Panel ID (required for update)</h4>
+                <firebot-input model="effect.panelId" placeholder="Enter panel ID"></firebot-input>
+            </div>
+        </eos-container>
+
+        <eos-container header="Panel Positioning" ng-show="effect.mode === 'create'">
+            <div class="control-fb-inline">
+                <firebot-radio-container>
+                    <firebot-radio label="Append to end of chat feed" model="effect.positionType" value="'append'" />
+                    <firebot-radio label="Prepend to start of chat feed" model="effect.positionType" value="'prepend'" />
+                    <firebot-radio label="Insert after specific message" model="effect.positionType" value="'afterMessage'" />
+                    <firebot-radio label="Insert before specific message" model="effect.positionType" value="'beforeMessage'" />
+                </firebot-radio-container>
+            </div>
+
+            <div class="control-fb-inline" ng-show="effect.positionType === 'afterMessage' || effect.positionType === 'beforeMessage'">
+                <h4 class="control-fb-label">Message ID</h4>
+                <firebot-input model="effect.messageId" placeholder="Enter the message ID"></firebot-input>
+            </div>
+        </eos-container>
+
+        <eos-container header="Action Buttons">
+            <div ui-sortable="sortableOptions" ng-model="effect.actionButtons">
+            <div ng-repeat="button in effect.actionButtons track by button.id" class="action-button-item">
+                <div class="action-button-header" ng-click="toggleButtonExpanded($index)">
+                    <div style="flex: 1; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-grip-vertical" style="cursor: grab; color: #888;"></i>
+                        <i class="fas fa-chevron-right collapse-icon" ng-class="{ expanded: expandedButtons[$index] }"></i>
+                        <div ng-style="{backgroundColor: effect.actionButtons[$index].backgroundColor, color: effect.actionButtons[$index].foregroundColor}" style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 4px; flex-shrink: 0;">
+                            <ng-container ng-if="effect.actionButtons[$index].icon && effect.actionButtons[$index].name">
+                                <i class="{{effect.actionButtons[$index].icon}}" style="min-width: 16px;"></i>
+                                <strong>{{effect.actionButtons[$index].name}}</strong>
+                            </ng-container>
+                            <ng-container ng-if="effect.actionButtons[$index].icon && !effect.actionButtons[$index].name">
+                                <i class="{{effect.actionButtons[$index].icon}}" style="min-width: 16px;"></i>
+                            </ng-container>
+                            <ng-container ng-if="!effect.actionButtons[$index].icon && effect.actionButtons[$index].name">
+                                <strong>{{effect.actionButtons[$index].name}}</strong>
+                            </ng-container>
+                            <ng-container ng-if="!effect.actionButtons[$index].icon && !effect.actionButtons[$index].name">
+                                <strong>New Button</strong>
+                            </ng-container>
+                        </div>
+                    </div>
+                    <div ng-click="$event.stopPropagation();">
+                        <button class="btn btn-secondary btn-sm" ng-click="duplicateButton($index)" title="Duplicate">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" ng-click="removeButton($index)" title="Remove" style="margin-left: 5px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    </div>
+
+                <div class="action-button-content" ng-class="{ expanded: expandedButtons[$index] }">
+                    <div class="control-fb-inline" style="display: block; width: 100%; margin-top: 12px;">
+                        <h4 class="control-fb-label">Button Name</h4>
+                        <firebot-input model="effect.actionButtons[$index].name" placeholder="Button display text"></firebot-input>
+                    </div>
+
+                    <div class="control-fb-inline" style="display: block; width: 100%; margin-top: 12px;">
+                        <h4 class="control-fb-label">Icon</h4>
+                        <input
+                            maxlength="2"
+                            type="text"
+                            class="form-control"
+                            ng-model="effect.actionButtons[$index].icon"
+                            icon-picker
+                        />
+                    </div>
+
+                    <div class="control-fb-inline">
+                        <h4 class="control-fb-label">Alignment</h4>
+                        <firebot-dropdown
+                            options="alignmentOptions"
+                            ng-model="effect.actionButtons[$index].alignment"
+                            placeholder="Select alignment"
+                            option-toggling="false"
+                        />
+                    </div>
+
+                    <div class="control-fb-inline">
+                        <h4 class="control-fb-label">Colors</h4>
+                        <div style="width: 100%; margin-top: 12px;">
+                            <color-picker-input
+                                model="effect.actionButtons[$index].backgroundColor"
+                                label="Background Color"
+                            ></color-picker-input>
+                        </div>
+
+                        <div style="width: 100%; margin-top: 12px;">
+                            <color-picker-input
+                                model="effect.actionButtons[$index].foregroundColor"
+                                label="Foreground Color"
+                            ></color-picker-input>
+                        </div>
+                    </div>
+
+                    <div class="control-fb-inline">
+                        <h4 class="control-fb-label">On Click</h4>
+                        <firebot-dropdown
+                            options="onClickOptions"
+                            ng-model="effect.actionButtons[$index].onClick"
+                            placeholder="Select action"
+                            option-toggling="false"
+                        />
+                    </div>
+
+                    <div class="control-fb-inline" style="display: block; width: 100%; margin-top: 12px;">
+                        <h4 class="control-fb-label">Extra Metadata</h4>
+                        <firebot-input
+                            input-title="(JSON)"
+                            model="effect.actionButtons[$index].extraMetadata"
+                            placeholder-text="{}"
+                            rows="3"
+                            use-text-area="true"
+                            menu-position="under"
+                        />
+                    </div>
+
+                    <div class="control-fb-inline" style="display: block; width: 100%; margin-top: 12px;">
+                        <h4 class="control-fb-label">Effects to Execute on Click</h4>
+                        <effect-list effects="effect.actionButtons[$index].effectList" trigger="{{trigger}}" header="Button Effects"></effect-list>
+                    </div>
+                </div>
+            </div>
+            </div>
+
+            <div class="control-fb-inline" style="margin-top: 10px;">
+                <button class="btn btn-primary" ng-click="addButton()">
+                    <i class="fas fa-plus"></i> Add Button
+                </button>
+            </div>
+
+            <p ng-if="effect.actionButtons.length === 0" style="color: #999; font-style: italic;">No buttons added yet. Click "Add Button" to create one.</p>
+        </eos-container>
+    `,
+    optionsController: ($scope: EffectScope<EffectModel>, backendCommunicator: any, $timeout: any) => {
+        // Initialize effect object with all required properties IMMEDIATELY
+        $scope.effect = $scope.effect || ({} as EffectModel);
+        $scope.effect.mode = $scope.effect.mode || 'create';
+        $scope.effect.positionType = $scope.effect.positionType || 'append';
+        $scope.effect.actionButtons = $scope.effect.actionButtons || [];
+        $scope.effect.panelId = $scope.effect.panelId || '';
+        $scope.effect.messageId = $scope.effect.messageId || '';
+
+        // Generate UUIDs via backend IPC call
+        const generateUUID = () => {
+            return backendCommunicator.fireEventSync('action-buttons:generate-uuid');
+        };
+
+        const fixedButtons = (button: ActionButtonDefinition): ActionButtonDefinition => {
+            const id = button.id || generateUUID();
+            if (!button.effectList) {
+                button.effectList = { id, list: [] };
+            }
+            button.id = id;
+            return button;
+        };
+
+        // Use $timeout to ensure Angular digest cycle processes the initialization before template binding
+        $timeout(() => {
+            $scope.effect.actionButtons = $scope.effect.actionButtons.map(fixedButtons);
+        }, 0);
+
+        const expandedButtons: Record<number, boolean> = {};
+        (($scope as any).expandedButtons) = expandedButtons;
+        (($scope as any).sortableOptions) = {
+            handle: '.fa-grip-vertical',
+            axis: 'y'
+        };
+        (($scope as any).alignmentOptions) = [
+            { name: 'Left', value: 'left' },
+            { name: 'Center', value: 'center' },
+            { name: 'Right', value: 'right' }
+        ];
+        (($scope as any).onClickOptions) = [
+            { name: 'No visibility changes', value: 'noVisibilityChanges' },
+            { name: 'Hide button', value: 'hideButton' },
+            { name: 'Hide panel', value: 'hidePanel' }
+        ];
+
+        (($scope as any).toggleButtonExpanded) = (index: number) => {
+            expandedButtons[index] = !expandedButtons[index];
+        };
+
+        const newButton = () => {
+            return fixedButtons({
+                id: '',
+                name: 'New Button',
+                backgroundColor: '#FF6B6BFF',
+                foregroundColor: '#FFFFFFFF',
+                icon: 'fas fa-circle',
+                alignment: 'center' as ButtonAlignment,
+                onClick: 'noVisibilityChanges',
+                effectList: {
+                    id: '',
+                    list: []
+                },
+                extraMetadata: ''
+            });
+        };
+
+        if ($scope.effect.actionButtons.length === 0) {
+            $scope.effect.actionButtons.push(newButton());
+        }
+
+        $scope.addButton = () => {
+            $scope.effect.actionButtons.push(newButton());
+        };
+
+        $scope.duplicateButton = (index: number) => {
+            const buttonCopy = angular.copy($scope.effect.actionButtons[index]);
+            const newEffectListId = generateUUID() || Math.random().toString(36).slice(2);
+            buttonCopy.id = newEffectListId;
+            if (!buttonCopy.effectList) {
+                buttonCopy.effectList = { id: newEffectListId, list: [] };
+            } else {
+                buttonCopy.effectList.id = newEffectListId;
+            }
+            $scope.effect.actionButtons.splice(index + 1, 0, fixedButtons(buttonCopy));
+        };
+
+        $scope.removeButton = (index: number) => {
+            $scope.effect.actionButtons.splice(index, 1);
+        };
+    },
+    optionsValidator: (effect) => {
+        const errors: string[] = [];
+
+        if (!effect.mode) {
+            errors.push('Mode is required');
+        }
+
+        if (effect.mode === 'update' && !effect.panelId) {
+            errors.push('Panel ID is required for update mode');
+        }
+
+        if (effect.mode === 'create' && (effect.positionType === 'afterMessage' || effect.positionType === 'beforeMessage') && (!effect.messageId || effect.messageId.trim() === '')) {
+            errors.push('Message ID is required when position is after or before a specific message');
+        }
+
+        if (!effect.actionButtons || effect.actionButtons.length === 0) {
+            errors.push('At least one action button is required');
+        } else {
+            for (let i = 0; i < effect.actionButtons.length; i++) {
+                const button = effect.actionButtons[i];
+                const hasName = button.name && button.name.trim() !== '';
+                const hasIcon = button.icon && button.icon.trim() !== '';
+                if (!hasName && !hasIcon) {
+                    errors.push(`Button ${i + 1}: Name and/or icon is required`);
+                }
+                if (!button.backgroundColor) {
+                    errors.push(`Button ${i + 1}: Background color is required`);
+                }
+                if (!button.foregroundColor) {
+                    errors.push(`Button ${i + 1}: Foreground color is required`);
+                }
+            }
+        }
+
+        return errors;
+    },
+    onTriggerEvent: async (event) => {
+        logger.debug('Triggered action-buttons:add-action-button-panel');
+
+        const errorResponse = {
+            success: false,
+            execution: {
+                stop: false,
+                bubbleStop: false
+            }
+        };
+
+        const effect = event.effect;
+        let panelId: string;
+
+        // Generate panelId for create mode
+        if (effect.mode === 'create') {
+            panelId = `action-buttons-${randomUUID()}`;
+            logger.debug(`Generated new panel ID: ${panelId}`);
+        } else {
+            panelId = effect.panelId || '';
+        }
+
+        if (!panelId) {
+            logger.error('Panel ID is required');
+            return errorResponse;
+        }
+
+        try {
+            // Process action buttons
+            const displayButtons = actionButtonManager.processActionButtons(
+                effect.actionButtons,
+                panelId,
+                event.trigger
+            );
+
+            logger.debug(`Processed ${displayButtons.length} display buttons`);
+
+            const { customChatPanelManager, frontendCommunicator } = firebot.modules;
+
+            if (!customChatPanelManager) {
+                logger.error('customChatPanelManager is not available');
+                return errorResponse;
+            }
+
+            if (effect.mode === 'update') {
+                logger.debug(`Update mode: notifying frontend to refresh panel ${panelId}`);
+                frontendCommunicator.send('action-buttons:panel-updated', panelId);
+            } else {
+                // Determine position for create mode
+                let position: CustomChatPanelPosition = 'append';
+                if (effect.positionType === 'prepend') {
+                    position = 'prepend';
+                } else if (effect.positionType === 'afterMessage' && effect.messageId) {
+                    position = { afterMessageId: effect.messageId };
+                } else if (effect.positionType === 'beforeMessage' && effect.messageId) {
+                    position = { beforeMessageId: effect.messageId };
+                }
+                logger.debug(`Using position: ${typeof position === 'string' ? position : JSON.stringify(position)}`);
+
+                // Inject panel via customChatPanelManager
+                // Only send panelId through IPC. Electron IPC doesn't serialize complex arrays well.
+                // The renderer will request buttons from the backend via IPC instead.
+                const injectData: InjectChatPanelData = {
+                    componentName: 'action-buttons-panel',
+                    componentData: {
+                        panelId
+                    },
+                    position,
+                    panelId
+                };
+
+                logger.debug(`Injecting panel with panelId: ${panelId}`);
+                customChatPanelManager.injectPanel(injectData);
+            }
+
+            logger.info(`Successfully injected action button panel ${panelId} with ${displayButtons.length} buttons`);
+
+            return {
+                success: true,
+                outputs: {
+                    panelId
+                }
+            };
+        } catch (error) {
+            logger.error(`Failed to add action button panel: ${error}`);
+            return errorResponse;
+        }
+    }
+};

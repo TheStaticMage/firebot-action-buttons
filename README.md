@@ -1,14 +1,22 @@
 # Firebot Action Buttons
 
-This [Firebot](https://firebot.app) plugin enables chat message action buttons using the Firebot custom chat panel injection system. It allows streamers to add interactive buttons to chat messages that can trigger custom actions.
+This [Firebot](https://firebot.app) plugin allows streamers to add interactive buttons directly in their chat feed to trigger custom actions.
+
+![Screenshot](/doc/screenshot.png)
+
+## :warning: :warning: Compatibility Notice :warning: :warning:
+
+This is a prerelease plugin that depends on features that are proposed but not yet added to Firebot.
+
+Despite any statements to the contrary, this will not work on any unmodified release version of Firebot at this time.
 
 ## Features
 
-- Inject interactive buttons into Firebot chat messages
-- Support for custom styling and icon libraries
+- Inject interactive buttons into the Firebot chat feed
+- Map custom effect lists to each button
+- Change button text, icon, alignment, and colors
 - Multiple positioning strategies (append, prepend, after/before specific messages)
-- Component-based architecture for flexible customization
-- Full control over button behavior and styling
+- Effects and automations to show and hide buttons and panels
 
 ## Documentation
 
@@ -17,7 +25,7 @@ This [Firebot](https://firebot.app) plugin enables chat message action buttons u
 
 ## Support
 
-The best way to get help is in my Discord server. Join [The Static Discord](https://discord.gg/DYdNKkhN8R) and visit the `#firebot-action-buttons` channel.
+The best way to get help is in my Discord server. Join [The Static Discord](https://discord.gg/rCYE2ywwzx) and visit the `#firebot-action-buttons` channel.
 
 - Please do not DM me on Discord.
 - Please do not ask for help in my chat when I am streaming.
@@ -37,5 +45,3 @@ If you use this on your stream, I would appreciate a shout-out. (Appreciated, bu
 - <https://www.twitch.tv/thestaticmage>
 - <https://kick.com/thestaticmage>
 - <https://youtube.com/@thestaticmagerisk>
-
-This plugin may contain and/or bundle some code from Firebot itself, which uses the same license.

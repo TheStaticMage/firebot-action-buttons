@@ -10,7 +10,7 @@
 
 | Plugin Version | Minimum Firebot Version |
 | --- | --- |
-| 0.1.0+ | 5.65 |
+| 0.0.1+ | 5.65 |
 
 ## Upgrade Procedure
 
@@ -24,5 +24,5 @@ Optional: Delete any older versions of this plugin from your Firebot scripts dir
 ## Upgrade Notes
 
 - :fire: Compatible with Firebot 5.65; earlier versions are not supported.
-- :boom: No breaking changes are expected within the 0.1.x action buttons releases.
+- :boom: No breaking changes are expected within the 0.0.x action buttons releases.
 - :no_entry_sign: No deprecated features at this time.

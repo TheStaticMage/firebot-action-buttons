@@ -1,13 +1,25 @@
 import { firebot, logger } from '../main';
-import { injectHelloWorldPanelEffect } from './inject-hello-world-panel';
+import { addActionButtonPanelEffect } from './add-action-button-panel';
+import { removeActionButtonPanelEffect } from './remove-action-button-panel';
+import { toggleActionButtonVisibilityEffect } from './toggle-action-button-visibility';
+import { toggleActionButtonPanelVisibilityEffect } from './toggle-action-button-panel-visibility';
 
 export function registerEffects(): void {
     const { effectManager } = firebot.modules;
 
-    logger.info("Registering action-buttons effects...");
+    logger.debug("Registering action-buttons effects...");
 
-    effectManager.registerEffect(injectHelloWorldPanelEffect);
-    logger.debug("Registered: Inject Hello World Panel effect");
+    effectManager.registerEffect(addActionButtonPanelEffect);
+    logger.debug("Registered: Add Action Button Panel effect");
 
-    logger.info("Action Buttons effects registered successfully.");
+    effectManager.registerEffect(removeActionButtonPanelEffect);
+    logger.debug("Registered: Remove Action Button Panel effect");
+
+    effectManager.registerEffect(toggleActionButtonVisibilityEffect);
+    logger.debug("Registered: Toggle Action Button Visibility effect");
+
+    effectManager.registerEffect(toggleActionButtonPanelVisibilityEffect);
+    logger.debug("Registered: Toggle Action Button Panel Visibility effect");
+
+    logger.debug("Action Buttons effects registered successfully.");
 }
