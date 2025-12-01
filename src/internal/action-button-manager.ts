@@ -74,7 +74,8 @@ export class ActionButtonManager {
         }
 
         // Store buttons for later retrieval by panel ID
-        this.panelButtons.set(panelId, displayButtons);
+        const existingButtons = this.panelButtons.get(panelId) || [];
+        this.panelButtons.set(panelId, existingButtons.concat(displayButtons));
         return displayButtons;
     }
 

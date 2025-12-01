@@ -1,5 +1,6 @@
 import { firebot, logger } from '../main';
 import { addActionButtonPanelEffect } from './add-action-button-panel';
+import { addButtonsToPanelEffect } from './add-buttons-to-panel';
 import { removeActionButtonPanelEffect } from './remove-action-button-panel';
 import { toggleActionButtonVisibilityEffect } from './toggle-action-button-visibility';
 import { toggleActionButtonPanelVisibilityEffect } from './toggle-action-button-panel-visibility';
@@ -10,7 +11,10 @@ export function registerEffects(): void {
     logger.debug("Registering action-buttons effects...");
 
     effectManager.registerEffect(addActionButtonPanelEffect);
-    logger.debug("Registered: Add Action Button Panel effect");
+    logger.debug("Registered: Create Action Button Panel effect");
+
+    effectManager.registerEffect(addButtonsToPanelEffect);
+    logger.debug("Registered: Add Action Buttons to Panel effect");
 
     effectManager.registerEffect(removeActionButtonPanelEffect);
     logger.debug("Registered: Remove Action Button Panel effect");

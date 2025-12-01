@@ -1,7 +1,5 @@
 import { Firebot } from '@crowbartools/firebot-custom-scripts-types';
 import { EffectScope } from '@crowbartools/firebot-custom-scripts-types/types/effects';
-import { CustomChatPanelPosition, InjectChatPanelData } from '@crowbartools/firebot-custom-scripts-types/types/modules/custom-chat-panel-manager';
-import { randomUUID } from 'crypto';
 import { actionButtonManager } from '../internal/action-button-manager';
 import { ActionButtonDefinition } from '../internal/action-button-types';
 import { firebot, logger } from '../main';
@@ -9,22 +7,21 @@ import { firebot, logger } from '../main';
 declare const angular: any;
 
 interface EffectModel {
-    positionType: 'append' | 'prepend' | 'afterMessage' | 'beforeMessage';
-    messageId?: string;
+    panelId: string;
     actionButtons: ActionButtonDefinition[];
 }
 
-export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
+export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
     definition: {
-        id: 'action-buttons:add-action-button-panel',
-        name: 'Create Action Button Panel',
-        description: 'Creates a new interactive action button panel in the chat feed',
+        id: 'action-buttons:add-buttons-to-panel',
+        name: 'Add Action Buttons to Panel',
+        description: 'Add action buttons to an existing panel',
         icon: 'far fa-plus-square',
         categories: ["common", "chat based", "advanced"],
         outputs: [
             {
                 label: 'Panel ID',
-                description: 'The ID of the created action button panel',
+                description: 'The ID of the panel that buttons were added to',
                 defaultName: 'panelId'
             }
         ]
@@ -84,19 +81,10 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                 color: #f0f0f0;
             }
         </style>
-        <eos-container header="Panel Positioning">
+        <eos-container header="Target Panel">
             <div class="control-fb-inline">
-                <firebot-radio-container>
-                    <firebot-radio label="Append to end of chat feed" model="effect.positionType" value="'append'" />
-                    <firebot-radio label="Prepend to start of chat feed" model="effect.positionType" value="'prepend'" />
-                    <firebot-radio label="Insert after specific message" model="effect.positionType" value="'afterMessage'" />
-                    <firebot-radio label="Insert before specific message" model="effect.positionType" value="'beforeMessage'" />
-                </firebot-radio-container>
-            </div>
-
-            <div class="control-fb-inline" ng-show="effect.positionType === 'afterMessage' || effect.positionType === 'beforeMessage'">
-                <h4 class="control-fb-label">Message ID</h4>
-                <firebot-input model="effect.messageId" placeholder="Enter the message ID"></firebot-input>
+                <h4 class="control-fb-label">Panel ID</h4>
+                <firebot-input model="effect.panelId" placeholder="Enter panel ID (supports variables)"></firebot-input>
             </div>
         </eos-container>
 
@@ -218,9 +206,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
     `,
     optionsController: ($scope: EffectScope<EffectModel>, backendCommunicator: any, $timeout: any) => {
         $scope.effect = $scope.effect || ({} as EffectModel);
-        $scope.effect.positionType = $scope.effect.positionType || 'append';
+        $scope.effect.panelId = $scope.effect.panelId || '';
         $scope.effect.actionButtons = $scope.effect.actionButtons || [];
-        $scope.effect.messageId = $scope.effect.messageId || '';
 
         const generateUUID = () => {
             return backendCommunicator.fireEventSync('action-buttons:generate-uuid');
@@ -304,8 +291,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
     optionsValidator: (effect) => {
         const errors: string[] = [];
 
-        if ((effect.positionType === 'afterMessage' || effect.positionType === 'beforeMessage') && (!effect.messageId || effect.messageId.trim() === '')) {
-            errors.push('Message ID is required when position is after or before a specific message');
+        if (!effect.panelId || effect.panelId.trim() === '') {
+            errors.push('Panel ID is required');
         }
 
         if (!effect.actionButtons || effect.actionButtons.length === 0) {
@@ -330,7 +317,7 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
         return errors;
     },
     onTriggerEvent: async (event) => {
-        logger.debug('Triggered action-buttons:add-action-button-panel');
+        logger.debug('Triggered action-buttons:add-buttons-to-panel');
 
         const errorResponse = {
             success: false,
@@ -341,8 +328,12 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
         };
 
         const effect = event.effect;
-        const panelId = `action-buttons-${randomUUID()}`;
-        logger.debug(`Generated new panel ID: ${panelId}`);
+        const panelId = effect.panelId;
+
+        if (!panelId || panelId.trim() === '') {
+            logger.error('Panel ID is required');
+            return errorResponse;
+        }
 
         try {
             const displayButtons = actionButtonManager.processActionButtons(
@@ -351,38 +342,12 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                 event.trigger
             );
 
-            logger.debug(`Processed ${displayButtons.length} display buttons`);
+            logger.debug(`Processed ${displayButtons.length} display buttons for panel ${panelId}`);
 
-            const { customChatPanelManager } = firebot.modules;
+            const { frontendCommunicator } = firebot.modules;
+            frontendCommunicator.send('action-buttons:panel-updated', panelId);
 
-            if (!customChatPanelManager) {
-                logger.error('customChatPanelManager is not available');
-                return errorResponse;
-            }
-
-            let position: CustomChatPanelPosition = 'append';
-            if (effect.positionType === 'prepend') {
-                position = 'prepend';
-            } else if (effect.positionType === 'afterMessage' && effect.messageId) {
-                position = { afterMessageId: effect.messageId };
-            } else if (effect.positionType === 'beforeMessage' && effect.messageId) {
-                position = { beforeMessageId: effect.messageId };
-            }
-            logger.debug(`Using position: ${typeof position === 'string' ? position : JSON.stringify(position)}`);
-
-            const injectData: InjectChatPanelData = {
-                componentName: 'action-buttons-panel',
-                componentData: {
-                    panelId
-                },
-                position,
-                panelId
-            };
-
-            logger.debug(`Injecting panel with panelId: ${panelId}`);
-            customChatPanelManager.injectPanel(injectData);
-
-            logger.info(`Successfully created action button panel ${panelId} with ${displayButtons.length} buttons`);
+            logger.info(`Successfully added ${displayButtons.length} buttons to panel ${panelId}`);
 
             return {
                 success: true,
@@ -391,7 +356,7 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                 }
             };
         } catch (error) {
-            logger.error(`Failed to create action button panel: ${error}`);
+            logger.error(`Failed to add buttons to panel: ${error}`);
             return errorResponse;
         }
     }

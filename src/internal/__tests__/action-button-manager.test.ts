@@ -28,16 +28,15 @@ import { actionButtonManager } from '../action-button-manager';
 
 describe('ActionButtonManager', () => {
     beforeEach(() => {
-        // Clear button store before each test
-        Object.getOwnPropertyNames(actionButtonManager).forEach((name) => {
-            if (name.includes('Button')) {
-                // Reset map
-                const store = (actionButtonManager as any).buttonStore;
-                if (store instanceof Map) {
-                    store.clear();
-                }
-            }
-        });
+        // Clear state before each test
+        const store = (actionButtonManager as any).buttonStore;
+        if (store instanceof Map) {
+            store.clear();
+        }
+        const panelButtons = (actionButtonManager as any).panelButtons;
+        if (panelButtons instanceof Map) {
+            panelButtons.clear();
+        }
     });
 
     describe('processActionButtons', () => {
@@ -127,6 +126,47 @@ describe('ActionButtonManager', () => {
             expect(displayButtons).toHaveLength(1);
             const config = (actionButtonManager as any).buttonStore.get(displayButtons[0].uuid);
             expect(config.extraMetadata).toBeUndefined();
+        });
+
+        it('should append new buttons to an existing panel without removing prior buttons', () => {
+            const panelId = 'test-panel-merge';
+
+            const first = [
+                {
+                    name: 'First',
+                    backgroundColor: '#111111',
+                    foregroundColor: '#FFFFFF',
+                    icon: 'fas fa-star',
+                    alignment: 'left',
+                    onClick: 'noVisibilityChanges',
+                    effectList: { list: [] }
+                }
+            ];
+
+            const second = [
+                {
+                    name: 'Second',
+                    backgroundColor: '#222222',
+                    foregroundColor: '#FFFFFF',
+                    icon: 'fas fa-heart',
+                    alignment: 'right',
+                    onClick: 'noVisibilityChanges',
+                    effectList: { list: [] }
+                }
+            ];
+
+            const trigger = {};
+
+            const firstDisplay = actionButtonManager.processActionButtons(first as any, panelId, trigger);
+            const secondDisplay = actionButtonManager.processActionButtons(second as any, panelId, trigger);
+
+            const combined = actionButtonManager.getPanelButtons(panelId);
+
+            expect(firstDisplay).toHaveLength(1);
+            expect(secondDisplay).toHaveLength(1);
+            expect(combined).toHaveLength(2);
+            const names = combined.map(b => b.name).sort();
+            expect(names).toEqual(['First', 'Second']);
         });
     });
 

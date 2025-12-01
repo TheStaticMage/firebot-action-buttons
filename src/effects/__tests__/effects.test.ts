@@ -1,4 +1,5 @@
 import { addActionButtonPanelEffect } from '../../effects/add-action-button-panel';
+import { addButtonsToPanelEffect } from '../../effects/add-buttons-to-panel';
 import { removeActionButtonPanelEffect } from '../../effects/remove-action-button-panel';
 import { toggleActionButtonVisibilityEffect } from '../../effects/toggle-action-button-visibility';
 import { toggleActionButtonPanelVisibilityEffect } from '../../effects/toggle-action-button-panel-visibility';
@@ -42,6 +43,7 @@ describe('Action Button Effects', () => {
             expect(addActionButtonPanelEffect).toBeDefined();
             expect(addActionButtonPanelEffect.definition).toBeDefined();
             expect(addActionButtonPanelEffect.definition.id).toBe('action-buttons:add-action-button-panel');
+            expect(addActionButtonPanelEffect.definition.name).toBe('Create Action Button Panel');
             expect(addActionButtonPanelEffect.optionsTemplate).toBeDefined();
         });
 
@@ -49,16 +51,53 @@ describe('Action Button Effects', () => {
             expect(addActionButtonPanelEffect.optionsValidator).toBeDefined();
         });
 
-        it('should validate mode is required', () => {
+        it('should validate actionButtons is required', () => {
             const validator = addActionButtonPanelEffect.optionsValidator;
             if (validator) {
-                const errors = validator({ mode: 'create', actionButtons: [] } as any);
+                const errors = validator({ positionType: 'append', actionButtons: [] } as any);
                 expect(Array.isArray(errors)).toBe(true);
+                expect(errors.some((e: string) => e.includes('action button'))).toBe(true);
             }
         });
 
         it('should have onTriggerEvent handler', () => {
             expect(addActionButtonPanelEffect.onTriggerEvent).toBeDefined();
+        });
+    });
+
+    describe('addButtonsToPanelEffect', () => {
+        it('should be defined with correct properties', () => {
+            expect(addButtonsToPanelEffect).toBeDefined();
+            expect(addButtonsToPanelEffect.definition).toBeDefined();
+            expect(addButtonsToPanelEffect.definition.id).toBe('action-buttons:add-buttons-to-panel');
+            expect(addButtonsToPanelEffect.definition.name).toBe('Add Action Buttons to Panel');
+            expect(addButtonsToPanelEffect.optionsTemplate).toBeDefined();
+        });
+
+        it('should have optionsValidator', () => {
+            expect(addButtonsToPanelEffect.optionsValidator).toBeDefined();
+        });
+
+        it('should validate panelId is required', () => {
+            const validator = addButtonsToPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({ panelId: '', actionButtons: [] } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.some((e: string) => e.includes('Panel ID'))).toBe(true);
+            }
+        });
+
+        it('should validate actionButtons is required', () => {
+            const validator = addButtonsToPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({ panelId: 'test-panel', actionButtons: [] } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.some((e: string) => e.includes('action button'))).toBe(true);
+            }
+        });
+
+        it('should have onTriggerEvent handler', () => {
+            expect(addButtonsToPanelEffect.onTriggerEvent).toBeDefined();
         });
     });
 
