@@ -16,6 +16,9 @@ export const actionButtonsEditorPocComponent = {
                 <button ng-click="testLogging()" class="btn btn-warning">
                     Test Logging
                 </button>
+                <button ng-if="$ctrl.buttons && $ctrl.buttons.length > 0" ng-click="renameLastButton()" class="btn btn-success">
+                    Rename Button
+                </button>
             </div>
         </div>
     `,
@@ -29,6 +32,14 @@ export const actionButtonsEditorPocComponent = {
                 level: "warn",
                 message: "Test button clicked"
             });
+        };
+
+        $scope.renameLastButton = () => {
+            const ctrl = $scope.$ctrl;
+            if (ctrl.buttons && ctrl.buttons.length > 0) {
+                ctrl.buttons[ctrl.buttons.length - 1].name = "Renamed";
+                $scope.$applyAsync();
+            }
         };
     }
 };
