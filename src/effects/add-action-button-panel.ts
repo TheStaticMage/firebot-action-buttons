@@ -13,6 +13,8 @@ interface EffectModel {
     showMessage?: boolean;
     messageText?: string;
     messageIcon?: string;
+    backgroundColorType?: 'default' | 'custom';
+    backgroundColor?: string;
 }
 
 export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
@@ -86,6 +88,22 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             </div>
         </eos-container>
 
+        <eos-container header="Background Color" pad-top="true">
+            <div class="control-fb-inline">
+                <firebot-radio-container>
+                    <firebot-radio label="Default (Firebot assigned)" model="effect.backgroundColorType" value="'default'" />
+                    <firebot-radio label="Custom" model="effect.backgroundColorType" value="'custom'" />
+                </firebot-radio-container>
+            </div>
+
+            <div class="control-fb-inline" style="margin-top: 15px;" ng-show="effect.backgroundColorType === 'custom'">
+                <color-picker-input
+                    model="effect.backgroundColor"
+                    label="Panel Background Color"
+                ></color-picker-input>
+            </div>
+        </eos-container>
+
         <action-buttons-editor buttons="effect.actionButtons"></action-buttons-editor>
     `,
     optionsController: ($scope: EffectScope<EffectModel>) => {
@@ -96,6 +114,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
         $scope.effect.showMessage = $scope.effect.showMessage ?? false;
         $scope.effect.messageText = $scope.effect.messageText || '';
         $scope.effect.messageIcon = $scope.effect.messageIcon || '';
+        $scope.effect.backgroundColorType = $scope.effect.backgroundColorType || 'default';
+        $scope.effect.backgroundColor = $scope.effect.backgroundColor || '#2c3e50';
     },
     optionsValidator: (effect) => {
         const errors: string[] = [];
@@ -189,7 +209,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                     panelId,
                     hasMessage: effect.showMessage || false,
                     messageText: effect.showMessage ? effect.messageText : undefined,
-                    messageIcon: effect.showMessage ? effect.messageIcon : undefined
+                    messageIcon: effect.showMessage ? effect.messageIcon : undefined,
+                    backgroundColor: effect.backgroundColorType === 'custom' ? effect.backgroundColor : undefined
                 },
                 position,
                 panelId

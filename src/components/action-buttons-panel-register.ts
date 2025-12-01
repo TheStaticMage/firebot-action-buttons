@@ -74,7 +74,7 @@ export function registerActionButtonsPanelComponent(): void {
                                 font-size: 16px;
                             }
                         </style>
-                        <div class="action-buttons-panel-wrapper">
+                        <div class="action-buttons-panel-wrapper" ng-style="backgroundColor && {'background-color': backgroundColor}">
                             <div ng-if="hasMessage" class="panel-message-container">
                                 <span ng-if="messageIcon" class="panel-message-icon">
                                     <i ng-class="getIconClass(messageIcon)"></i>
@@ -124,6 +124,7 @@ export function registerActionButtonsPanelComponent(): void {
                         $scope.hasMessage = false;
                         $scope.messageText = '';
                         $scope.messageIcon = '';
+                        $scope.backgroundColor = undefined;
 
                         $scope.getIconClass = function(icon: string) {
                             if (!icon) {
@@ -178,6 +179,7 @@ export function registerActionButtonsPanelComponent(): void {
                                 $scope.hasMessage = data.hasMessage || false;
                                 $scope.messageText = data.messageText || '';
                                 $scope.messageIcon = data.messageIcon || '';
+                                $scope.backgroundColor = data.backgroundColor;
                             }
                         };
 
