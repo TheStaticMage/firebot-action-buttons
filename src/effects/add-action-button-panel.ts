@@ -10,6 +10,9 @@ interface EffectModel {
     positionType: 'append' | 'prepend' | 'afterMessage' | 'beforeMessage';
     messageId?: string;
     actionButtons: ActionButtonDefinition[];
+    showMessage?: boolean;
+    messageText?: string;
+    messageIcon?: string;
 }
 
 export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
@@ -49,6 +52,39 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             </div>
         </eos-container>
 
+        <eos-container header="Optional Message" pad-top="true">
+            <div class="control-fb-inline">
+                <firebot-radio-container>
+                    <firebot-radio label="No message" model="effect.showMessage" value="false" />
+                    <firebot-radio label="Show message" model="effect.showMessage" value="true" />
+                </firebot-radio-container>
+            </div>
+
+            <div ng-show="effect.showMessage">
+                <div class="control-fb-inline" style="margin-top: 15px;">
+                    <h4 class="control-fb-label">Message Text (optional)</h4>
+                    <firebot-input
+                        model="effect.messageText"
+                        use-text-area="true"
+                        placeholder-text="Enter message (supports markdown)"
+                        rows="3"
+                        menu-position="under"
+                    />
+                </div>
+
+                <div class="control-fb-inline" style="margin-top: 15px;">
+                    <h4 class="control-fb-label">Icon (optional)</h4>
+                    <input
+                        maxlength="2"
+                        type="text"
+                        class="form-control"
+                        ng-model="effect.messageIcon"
+                        icon-picker
+                    />
+                </div>
+            </div>
+        </eos-container>
+
         <action-buttons-editor buttons="effect.actionButtons"></action-buttons-editor>
     `,
     optionsController: ($scope: EffectScope<EffectModel>) => {
@@ -56,12 +92,23 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
         $scope.effect.positionType = $scope.effect.positionType || 'append';
         $scope.effect.actionButtons = $scope.effect.actionButtons || [];
         $scope.effect.messageId = $scope.effect.messageId || '';
+        $scope.effect.showMessage = $scope.effect.showMessage ?? false;
+        $scope.effect.messageText = $scope.effect.messageText || '';
+        $scope.effect.messageIcon = $scope.effect.messageIcon || '';
     },
     optionsValidator: (effect) => {
         const errors: string[] = [];
 
         if ((effect.positionType === 'afterMessage' || effect.positionType === 'beforeMessage') && (!effect.messageId || effect.messageId.trim() === '')) {
             errors.push('Message ID is required when position is after or before a specific message');
+        }
+
+        if (effect.showMessage) {
+            const hasText = effect.messageText && effect.messageText.trim() !== '';
+            const hasIcon = effect.messageIcon && effect.messageIcon.trim() !== '';
+            if (!hasText && !hasIcon) {
+                errors.push('When message is enabled, you must provide either message text or an icon (or both)');
+            }
         }
 
         if (!effect.actionButtons || effect.actionButtons.length === 0) {
@@ -129,7 +176,10 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             const injectData: InjectChatPanelData = {
                 componentName: 'action-buttons-panel',
                 componentData: {
-                    panelId
+                    panelId,
+                    hasMessage: effect.showMessage || false,
+                    messageText: effect.showMessage ? effect.messageText : undefined,
+                    messageIcon: effect.showMessage ? effect.messageIcon : undefined
                 },
                 position,
                 panelId

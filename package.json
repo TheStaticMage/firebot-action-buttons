@@ -16,11 +16,17 @@
     },
     "author": "thestaticmage",
     "license": "GNU3",
+    "dependencies": {
+        "dompurify": "^3.0.9",
+        "jsdom": "^24.0.0",
+        "marked": "^12.0.0"
+    },
     "devDependencies": {
         "@crowbartools/firebot-custom-scripts-types": "github:TheStaticMage/firebot-custom-scripts-types#running",
         "@eslint/js": "^9.28.0",
         "@stylistic/eslint-plugin": "^4.4.1",
         "@types/jest": "^30.0.0",
+        "@types/jsdom": "^27.0.0",
         "@types/semver": "^7.7.1",
         "jest": "^30.0.4",
         "semver": "^7.7.3",

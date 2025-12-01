@@ -13,6 +13,31 @@ export function registerActionButtonsPanelComponent(): void {
                     bindings: {},
                     template: `
                         <style>
+                            .action-buttons-panel-wrapper {
+                                width: 100%;
+                            }
+                            .action-buttons-panel-wrapper:not(:has(.panel-message-container)) {
+                                background: #2c3e50;
+                                border: 1px solid #29292988;
+                                border-radius: 4px;
+                            }
+                            .panel-message-container {
+                                display: flex;
+                                padding: 6px;
+                                padding-left: 10px;
+                                align-items: flex-start;
+                                border-bottom: 1px solid #29292988;
+                            }
+                            .panel-message-icon {
+                                font-size: 25px;
+                                margin-right: 10px;
+                                flex-shrink: 0;
+                            }
+                            .panel-message-text {
+                                margin: auto 0;
+                                word-break: break-word;
+                                flex: 1;
+                            }
                             .action-buttons-panel {
                                 display: flex;
                                 gap: 10px;
@@ -25,6 +50,10 @@ export function registerActionButtonsPanelComponent(): void {
                             }
                             .action-buttons-panel.align-right {
                                 justify-content: flex-end;
+                            }
+                            .action-buttons-panel.with-message {
+                                padding-top: 5px;
+                                border-top: none;
                             }
                             .action-button {
                                 padding: 8px 16px;
@@ -45,7 +74,14 @@ export function registerActionButtonsPanelComponent(): void {
                                 font-size: 16px;
                             }
                         </style>
-                        <div class="action-buttons-panel">
+                        <div class="action-buttons-panel-wrapper">
+                            <div ng-if="hasMessage" class="panel-message-container">
+                                <span ng-if="messageIcon" class="panel-message-icon">
+                                    <i ng-class="getIconClass(messageIcon)"></i>
+                                </span>
+                                <span ng-if="messageText" class="panel-message-text" ng-bind-html="getMessageHtml(messageText)"></span>
+                            </div>
+                            <div class="action-buttons-panel" ng-class="{'with-message': hasMessage}">
                             <div style="flex: 1; display: flex; gap: 10px;">
                                 <button ng-repeat="button in buttons | filter:{alignment:'left'} | filter:filterVisible track by button.uuid"
                                         class="action-button"
@@ -76,6 +112,7 @@ export function registerActionButtonsPanelComponent(): void {
                                     <span>{{button.name}}</span>
                                 </button>
                             </div>
+                            </div>
                         </div>
                     `,
                     controller: ($scope: any, backendCommunicator: any, logger: any) => {
@@ -83,6 +120,28 @@ export function registerActionButtonsPanelComponent(): void {
                         const instanceId = Math.random().toString(36).substring(7);
                         ctrl.buttons = [];
                         $scope.buttons = ctrl.buttons;
+
+                        $scope.hasMessage = false;
+                        $scope.messageText = '';
+                        $scope.messageIcon = '';
+
+                        $scope.getIconClass = function(icon: string) {
+                            if (!icon) {
+                                return '';
+                            }
+                            const classes = icon.split(' ');
+                            if (classes.length === 1) {
+                                return `far ${classes[0]}`;
+                            }
+                            return classes.join(' ');
+                        };
+
+                        $scope.getMessageHtml = function(text: string) {
+                            if (!text) {
+                                return '';
+                            }
+                            return backendCommunicator.fireEventSync('action-buttons:render-markdown', text);
+                        };
 
                         const loadButtonsForPanel = (panelId: string) => {
                             const currentPanelId = panelId;
@@ -115,6 +174,10 @@ export function registerActionButtonsPanelComponent(): void {
                             const data = $scope.$parent?.componentData;
                             if (data && data.panelId) {
                                 loadButtonsForPanel(data.panelId);
+
+                                $scope.hasMessage = data.hasMessage || false;
+                                $scope.messageText = data.messageText || '';
+                                $scope.messageIcon = data.messageIcon || '';
                             }
                         };
 

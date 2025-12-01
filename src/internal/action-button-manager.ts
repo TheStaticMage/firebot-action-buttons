@@ -1,6 +1,9 @@
 import { Trigger } from '@crowbartools/firebot-custom-scripts-types/types/triggers';
 import { randomUUID } from 'crypto';
 import { firebot, logger } from '../main';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
 import {
     ActionButtonConfig,
     ActionButtonDefinition,
@@ -456,6 +459,28 @@ export class ActionButtonManager {
                 return { success };
             }
         );
+
+        frontendCommunicator.on('action-buttons:render-markdown', (text: string) => {
+            if (!text) {
+                return '';
+            }
+            try {
+                // Configure marked to use <br> for line breaks
+                marked.setOptions({
+                    breaks: true
+                });
+
+                const jsdomWindow = (new (JSDOM as any)('').window);
+                // eslint-disable-next-line new-cap
+                const purify = DOMPurify(jsdomWindow);
+
+                const rendered = marked.parseInline(text) as string;
+                return purify.sanitize(rendered);
+            } catch (error) {
+                logger.error(`Failed to render markdown: ${error}`);
+                return text; // Graceful fallback
+            }
+        });
 
         logger.debug("Action button listeners set up successfully");
     }

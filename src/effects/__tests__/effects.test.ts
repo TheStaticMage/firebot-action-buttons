@@ -60,6 +60,106 @@ describe('Action Button Effects', () => {
             }
         });
 
+        it('should validate message text or icon when showMessage is true', () => {
+            const validator = addActionButtonPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({
+                    positionType: 'append',
+                    actionButtons: [
+                        {
+                            name: 'Test',
+                            backgroundColor: '#FF0000FF',
+                            foregroundColor: '#FFFFFFFF',
+                            icon: 'fas fa-star',
+                            alignment: 'left',
+                            onClick: 'noVisibilityChanges',
+                            effectList: []
+                        }
+                    ],
+                    showMessage: true,
+                    messageText: '',
+                    messageIcon: ''
+                } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.some((e: string) => e.includes('message'))).toBe(true);
+            }
+        });
+
+        it('should pass validation with message text only', () => {
+            const validator = addActionButtonPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({
+                    positionType: 'append',
+                    actionButtons: [
+                        {
+                            name: 'Test',
+                            backgroundColor: '#FF0000FF',
+                            foregroundColor: '#FFFFFFFF',
+                            icon: 'fas fa-star',
+                            alignment: 'left',
+                            onClick: 'noVisibilityChanges',
+                            effectList: []
+                        }
+                    ],
+                    showMessage: true,
+                    messageText: 'Test message',
+                    messageIcon: ''
+                } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.filter((e: string) => e.includes('message')).length).toBe(0);
+            }
+        });
+
+        it('should pass validation with icon only', () => {
+            const validator = addActionButtonPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({
+                    positionType: 'append',
+                    actionButtons: [
+                        {
+                            name: 'Test',
+                            backgroundColor: '#FF0000FF',
+                            foregroundColor: '#FFFFFFFF',
+                            icon: 'fas fa-star',
+                            alignment: 'left',
+                            onClick: 'noVisibilityChanges',
+                            effectList: []
+                        }
+                    ],
+                    showMessage: true,
+                    messageText: '',
+                    messageIcon: 'fa-bell'
+                } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.filter((e: string) => e.includes('message')).length).toBe(0);
+            }
+        });
+
+        it('should pass validation with showMessage false and no message data', () => {
+            const validator = addActionButtonPanelEffect.optionsValidator;
+            if (validator) {
+                const errors = validator({
+                    positionType: 'append',
+                    actionButtons: [
+                        {
+                            name: 'Test',
+                            backgroundColor: '#FF0000FF',
+                            foregroundColor: '#FFFFFFFF',
+                            icon: 'fas fa-star',
+                            alignment: 'left',
+                            onClick: 'noVisibilityChanges',
+                            effectList: []
+                        }
+                    ],
+                    showMessage: false,
+                    messageText: '',
+                    messageIcon: ''
+                } as any);
+                expect(Array.isArray(errors)).toBe(true);
+                expect(errors.filter((e: string) => e.includes('message')).length).toBe(0);
+            }
+        });
+
         it('should have onTriggerEvent handler', () => {
             expect(addActionButtonPanelEffect.onTriggerEvent).toBeDefined();
         });
