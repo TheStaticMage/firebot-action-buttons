@@ -24,6 +24,11 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                 label: 'Panel ID',
                 description: 'The ID of the created action button panel',
                 defaultName: 'panelId'
+            },
+            {
+                label: 'Button IDs',
+                description: 'Array of button IDs in the order they were specified',
+                defaultName: 'buttonIds'
             }
         ]
     },
@@ -138,7 +143,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             return {
                 success: true,
                 outputs: {
-                    panelId
+                    panelId,
+                    buttonIds: displayButtons.map(button => button.uuid)
                 }
             };
         } catch (error) {

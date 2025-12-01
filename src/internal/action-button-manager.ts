@@ -4,7 +4,8 @@ import { firebot, logger } from '../main';
 import {
     ActionButtonConfig,
     ActionButtonDefinition,
-    ActionButtonDisplay
+    ActionButtonDisplay,
+    OnClickVisibility
 } from './action-button-types';
 
 export class ActionButtonManager {
@@ -373,6 +374,62 @@ export class ActionButtonManager {
         logger.debug(`Removed ${buttonsToRemove.length} buttons for panel ${panelId}`);
     }
 
+    public updateButtonProperties(
+        uuid: string,
+        updates: {
+            buttonName?: string;
+            icon?: string;
+            backgroundColor?: string;
+            foregroundColor?: string;
+            onClick?: OnClickVisibility;
+        }
+    ): boolean {
+        const config = this.buttonStore.get(uuid);
+        if (!config) {
+            logger.warn(`Button ${uuid} not found in buttonStore`);
+            return false;
+        }
+
+        const panelId = config.panelId;
+        const buttons = this.panelButtons.get(panelId);
+        if (!buttons) {
+            logger.warn(`Panel ${panelId} not found for button ${uuid}`);
+            return false;
+        }
+
+        const button = buttons.find(b => b.uuid === uuid);
+        if (!button) {
+            logger.warn(`Button ${uuid} not found in panel ${panelId}`);
+            return false;
+        }
+
+        // Apply updates to both display button and config
+        if (updates.buttonName !== undefined) {
+            button.name = updates.buttonName;
+            config.buttonName = updates.buttonName;
+        }
+        if (updates.icon !== undefined) {
+            button.icon = updates.icon;
+        }
+        if (updates.backgroundColor !== undefined) {
+            button.backgroundColor = updates.backgroundColor;
+        }
+        if (updates.foregroundColor !== undefined) {
+            button.foregroundColor = updates.foregroundColor;
+        }
+        if (updates.onClick !== undefined) {
+            button.onClick = updates.onClick;
+            config.onClick = updates.onClick;
+        }
+
+        // Notify frontend of panel update
+        const { frontendCommunicator } = firebot.modules;
+        frontendCommunicator.send('action-buttons:panel-updated', panelId);
+
+        logger.debug(`Updated button ${uuid} properties`);
+        return true;
+    }
+
     setupListeners(): void {
         const { frontendCommunicator } = firebot.modules;
 
@@ -391,6 +448,14 @@ export class ActionButtonManager {
             logger.debug(`Received request for buttons for panel ${panelId}`);
             return this.getPanelButtons(panelId);
         });
+
+        frontendCommunicator.onAsync('action-buttons:update-button-properties',
+            async (data: { uuid: string; updates: Record<string, any> }) => {
+                logger.debug(`Received request to update button ${data.uuid}`);
+                const success = this.updateButtonProperties(data.uuid, data.updates);
+                return { success };
+            }
+        );
 
         logger.debug("Action button listeners set up successfully");
     }

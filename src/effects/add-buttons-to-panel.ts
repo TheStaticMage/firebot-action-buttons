@@ -18,9 +18,9 @@ export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
         categories: ["common", "chat based", "advanced"],
         outputs: [
             {
-                label: 'Panel ID',
-                description: 'The ID of the panel that buttons were added to',
-                defaultName: 'panelId'
+                label: 'Button IDs',
+                description: 'Array of button IDs in the order they were specified',
+                defaultName: 'buttonIds'
             }
         ]
     },
@@ -103,7 +103,7 @@ export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
             return {
                 success: true,
                 outputs: {
-                    panelId
+                    buttonIds: displayButtons.map(button => button.uuid)
                 }
             };
         } catch (error) {

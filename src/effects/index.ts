@@ -4,6 +4,7 @@ import { addButtonsToPanelEffect } from './add-buttons-to-panel';
 import { removeActionButtonPanelEffect } from './remove-action-button-panel';
 import { toggleActionButtonVisibilityEffect } from './toggle-action-button-visibility';
 import { toggleActionButtonPanelVisibilityEffect } from './toggle-action-button-panel-visibility';
+import { updateActionButtonEffect } from './update-action-button';
 
 export function registerEffects(): void {
     const { effectManager } = firebot.modules;
@@ -24,6 +25,9 @@ export function registerEffects(): void {
 
     effectManager.registerEffect(toggleActionButtonPanelVisibilityEffect);
     logger.debug("Registered: Toggle Action Button Panel Visibility effect");
+
+    effectManager.registerEffect(updateActionButtonEffect);
+    logger.debug("Registered: Update Action Button effect");
 
     logger.debug("Action Buttons effects registered successfully.");
 }
