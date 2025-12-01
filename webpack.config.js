@@ -11,8 +11,15 @@ module.exports = {
     },
     externals: {
         'bufferutil': 'commonjs bufferutil',
-        'utf-8-validate': 'commonjs utf-8-validate'
+        'utf-8-validate': 'commonjs utf-8-validate',
+        'canvas': 'commonjs canvas'
     },
+    ignoreWarnings: [
+        {
+            module: /jsdom/,
+            message: /Can't resolve 'canvas'/
+        }
+    ],
     output: {
         libraryTarget: 'commonjs2',
         libraryExport: 'default',
