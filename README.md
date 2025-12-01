@@ -22,6 +22,7 @@ Despite any statements to the contrary, this will not work on any unmodified rel
 
 - [Installation](/doc/installation.md)
 - [Upgrading](/doc/upgrading.md)
+- [Tutorial: Approve Channel Reward Requests](/doc/tutorial-basics.md)
 
 ## Support
 
