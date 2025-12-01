@@ -7,7 +7,7 @@ import { ActionButtonDefinition } from '../internal/action-button-types';
 import { firebot, logger } from '../main';
 
 interface EffectModel {
-    positionType: 'append' | 'prepend' | 'afterMessage' | 'beforeMessage';
+    positionType: 'append' | 'prepend' | 'afterMessage' | 'beforeMessage' | 'triggerMessage';
     messageId?: string;
     actionButtons: ActionButtonDefinition[];
     showMessage?: boolean;
@@ -41,6 +41,7 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
                 <firebot-radio-container>
                     <firebot-radio label="Append to end of chat feed" model="effect.positionType" value="'append'" />
                     <firebot-radio label="Prepend to start of chat feed" model="effect.positionType" value="'prepend'" />
+                    <firebot-radio label="Insert after trigger message" model="effect.positionType" value="'triggerMessage'" />
                     <firebot-radio label="Insert after specific message" model="effect.positionType" value="'afterMessage'" />
                     <firebot-radio label="Insert before specific message" model="effect.positionType" value="'beforeMessage'" />
                 </firebot-radio-container>
@@ -166,6 +167,15 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             let position: CustomChatPanelPosition = 'append';
             if (effect.positionType === 'prepend') {
                 position = 'prepend';
+            } else if (effect.positionType === 'triggerMessage') {
+                const metadata = event.trigger.metadata as Record<string, any>;
+                const triggerMessageId = (metadata?.chatMessage?.id as string) ?? (metadata?.eventData?.chatMessage?.id as string);
+                if (triggerMessageId) {
+                    position = { afterMessageId: triggerMessageId };
+                    logger.debug(`Using trigger message ID: ${triggerMessageId}`);
+                } else {
+                    logger.debug('No trigger message ID found, defaulting to append');
+                }
             } else if (effect.positionType === 'afterMessage' && effect.messageId) {
                 position = { afterMessageId: effect.messageId };
             } else if (effect.positionType === 'beforeMessage' && effect.messageId) {
