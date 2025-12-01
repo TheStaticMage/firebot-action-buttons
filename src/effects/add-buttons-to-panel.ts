@@ -32,8 +32,6 @@ export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
             </div>
         </eos-container>
 
-        <action-buttons-editor-poc buttons="effect.actionButtons"></action-buttons-editor-poc>
-
         <action-buttons-editor buttons="effect.actionButtons"></action-buttons-editor>
     `,
     optionsController: ($scope: EffectScope<EffectModel>) => {

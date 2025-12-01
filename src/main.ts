@@ -2,7 +2,6 @@ import { Firebot, RunRequest } from '@crowbartools/firebot-custom-scripts-types'
 import { Logger } from '@crowbartools/firebot-custom-scripts-types/types/modules/logger';
 import { satisfies } from 'semver';
 import { registerActionButtonsPanelComponent } from './components/action-buttons-panel-register';
-import { registerActionButtonsEditorPoc } from './components/action-buttons-editor/proof-of-concept.register';
 import { registerActionButtonsEditor } from './components/action-buttons-editor/action-buttons-editor.register';
 import { registerEffects } from './effects';
 import { actionButtonManager } from './internal/action-button-manager';
@@ -47,7 +46,6 @@ const script: Firebot.CustomScript<any> = {
 
         actionButtonManager.setupListeners();
         registerActionButtonsPanelComponent();
-        registerActionButtonsEditorPoc(runRequest.modules.uiExtensionManager);
         registerActionButtonsEditor();
         registerEffects();
         registerReplaceVariables();
