@@ -100,7 +100,7 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             </div>
         </eos-container>
 
-        <action-buttons-editor-poc></action-buttons-editor-poc>
+        <action-buttons-editor-poc buttons="effect.actionButtons"></action-buttons-editor-poc>
 
         <eos-container header="Action Buttons">
             <div ui-sortable="sortableOptions" ng-model="effect.actionButtons">
