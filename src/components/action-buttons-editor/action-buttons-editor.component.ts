@@ -37,9 +37,6 @@ export const actionButtonsEditorComponent = {
             .action-button-header:hover {
                 opacity: 0.8;
             }
-            .action-button-header strong {
-                color: #e0e0e0;
-            }
             .action-button-content {
                 display: none;
             }
