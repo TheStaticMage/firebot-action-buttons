@@ -1,7 +1,8 @@
 export const actionButtonsEditorComponent = {
     name: "actionButtonsEditor",
     bindings: {
-        buttons: "="
+        buttons: "=",
+        trigger: "@"
     },
     template: `
         <style>
@@ -159,7 +160,7 @@ export const actionButtonsEditorComponent = {
 
                         <div class="control-fb-inline" style="display: block; width: 100%; margin-top: 12px;">
                             <h4 class="control-fb-label">Effects to Execute on Click</h4>
-                            <effect-list effects="$ctrl.buttons[$index].effectList" trigger="{{trigger}}" header="Button Effects"></effect-list>
+                            <effect-list effects="$ctrl.buttons[$index].effectList" trigger="{{$ctrl.trigger}}" header="Button Effects"></effect-list>
                         </div>
                     </div>
                 </div>
