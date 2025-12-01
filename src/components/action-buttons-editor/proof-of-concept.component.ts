@@ -9,9 +9,26 @@ export const actionButtonsEditorPocComponent = {
             <p>This is a proof of concept component rendered via uiExtensionManager.</p>
             <p ng-if="$ctrl.buttons && $ctrl.buttons.length > 0">First button name: <strong>{{$ctrl.buttons[0].name}}</strong></p>
             <p ng-if="!$ctrl.buttons || $ctrl.buttons.length === 0">No action buttons</p>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button ng-click="showAlert()" class="btn btn-primary">
+                    Test Alert Button
+                </button>
+                <button ng-click="testLogging()" class="btn btn-warning">
+                    Test Logging
+                </button>
+            </div>
         </div>
     `,
-    controller: ($scope: any) => {
-        // Bindings are available on $ctrl in the template
+    controller: ($scope: any, backendCommunicator: any) => {
+        $scope.showAlert = () => {
+            alert("Alert from shared component! Bindings work correctly.");
+        };
+
+        $scope.testLogging = () => {
+            backendCommunicator.send("logging", {
+                level: "warn",
+                message: "Test button clicked"
+            });
+        };
     }
 };
