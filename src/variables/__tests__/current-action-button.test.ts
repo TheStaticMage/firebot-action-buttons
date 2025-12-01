@@ -1,5 +1,5 @@
 import { Trigger } from '@crowbartools/firebot-custom-scripts-types/types/triggers';
-import { actionButton } from '../action-button';
+import { currentActionButton } from '../current-action-button';
 import { actionButtonManager } from '../../internal/action-button-manager';
 
 jest.mock('../../main', () => ({
@@ -13,7 +13,7 @@ jest.mock('../../main', () => ({
 
 jest.mock('../../internal/action-button-manager');
 
-describe('actionButton replace variable', () => {
+describe('currentActionButton replace variable', () => {
     const mockButtonInfo = {
         uuid: 'test-uuid-123',
         name: 'Test Button',
@@ -38,12 +38,15 @@ describe('actionButton replace variable', () => {
     });
 
     describe('evaluator', () => {
-        it('should return button info for specified UUID', () => {
+        it('should return current button info', () => {
             const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
             actionButtonManager.getButtonInfo = mockGetButtonInfo;
             const trigger = createTrigger();
-            const result = actionButton.evaluator(trigger, 'test-uuid-123');
-            expect(mockGetButtonInfo).toHaveBeenCalledWith('test-uuid-123');
+            trigger.metadata.actionButton = {
+                stack: [{ buttonId: 'current-button-uuid' }]
+            };
+            const result = currentActionButton.evaluator(trigger);
+            expect(mockGetButtonInfo).toHaveBeenCalledWith('current-button-uuid');
             expect(result).toEqual(mockButtonInfo);
         });
 
@@ -51,15 +54,36 @@ describe('actionButton replace variable', () => {
             const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
             actionButtonManager.getButtonInfo = mockGetButtonInfo;
             const trigger = createTrigger();
-            const result = actionButton.evaluator(trigger, 'test-uuid-123', 'name');
+            trigger.metadata.actionButton = {
+                stack: [{ buttonId: 'current-button-uuid' }]
+            };
+            const result = currentActionButton.evaluator(trigger, 'name');
             expect(result).toBe('Test Button');
+        });
+
+        it('should return empty object when no action button context', () => {
+            const trigger = createTrigger();
+            const result = currentActionButton.evaluator(trigger);
+            expect(result).toEqual({});
+        });
+
+        it('should return empty object when stack is empty', () => {
+            const trigger = createTrigger();
+            trigger.metadata.actionButton = {
+                stack: []
+            };
+            const result = currentActionButton.evaluator(trigger);
+            expect(result).toEqual({});
         });
 
         it('should return empty object when button not found', () => {
             const mockGetButtonInfo = jest.fn().mockReturnValue({});
             actionButtonManager.getButtonInfo = mockGetButtonInfo;
             const trigger = createTrigger();
-            const result = actionButton.evaluator(trigger, 'unknown-uuid');
+            trigger.metadata.actionButton = {
+                stack: [{ buttonId: 'unknown-uuid' }]
+            };
+            const result = currentActionButton.evaluator(trigger);
             expect(result).toEqual({});
         });
 
@@ -67,44 +91,22 @@ describe('actionButton replace variable', () => {
             const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
             actionButtonManager.getButtonInfo = mockGetButtonInfo;
             const trigger = createTrigger();
-            const result = actionButton.evaluator(trigger, 'test-uuid-123', 'nonExistent');
+            trigger.metadata.actionButton = {
+                stack: [{ buttonId: 'current-button-uuid' }]
+            };
+            const result = currentActionButton.evaluator(trigger, 'nonExistent');
             expect(result).toBe('');
         });
 
-        it('should return current button info when "current" keyword is used', () => {
+        it('should return backgroundColor property', () => {
             const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
             actionButtonManager.getButtonInfo = mockGetButtonInfo;
             const trigger = createTrigger();
             trigger.metadata.actionButton = {
                 stack: [{ buttonId: 'current-button-uuid' }]
             };
-            const result = actionButton.evaluator(trigger, 'current');
-            expect(mockGetButtonInfo).toHaveBeenCalledWith('current-button-uuid');
-            expect(result).toEqual(mockButtonInfo);
-        });
-
-        it('should return current button property when "current" keyword is used with property', () => {
-            const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
-            actionButtonManager.getButtonInfo = mockGetButtonInfo;
-            const trigger = createTrigger();
-            trigger.metadata.actionButton = {
-                stack: [{ buttonId: 'current-button-uuid' }]
-            };
-            const result = actionButton.evaluator(trigger, 'current', 'backgroundColor');
-            expect(mockGetButtonInfo).toHaveBeenCalledWith('current-button-uuid');
+            const result = currentActionButton.evaluator(trigger, 'backgroundColor');
             expect(result).toBe('#FF0000');
-        });
-
-        it('should handle "current" keyword case-insensitively', () => {
-            const mockGetButtonInfo = jest.fn().mockReturnValue(mockButtonInfo);
-            actionButtonManager.getButtonInfo = mockGetButtonInfo;
-            const trigger = createTrigger();
-            trigger.metadata.actionButton = {
-                stack: [{ buttonId: 'current-button-uuid' }]
-            };
-            const result = actionButton.evaluator(trigger, 'CURRENT');
-            expect(mockGetButtonInfo).toHaveBeenCalledWith('current-button-uuid');
-            expect(result).toEqual(mockButtonInfo);
         });
     });
 });

@@ -6,6 +6,7 @@ import { actionButtonName } from './action-button-name';
 import { actionButtonPanel } from './action-button-panel';
 import { actionButtonPanelId } from './action-button-panel-id';
 import { actionButtonStack } from './action-button-stack';
+import { currentActionButton } from './current-action-button';
 
 export function registerReplaceVariables() {
     const { replaceVariableManager } = firebot.modules;
@@ -17,4 +18,5 @@ export function registerReplaceVariables() {
     replaceVariableManager.registerReplaceVariable(actionButtonPanel);
     replaceVariableManager.registerReplaceVariable(actionButtonPanelId);
     replaceVariableManager.registerReplaceVariable(actionButtonStack);
+    replaceVariableManager.registerReplaceVariable(currentActionButton);
 }

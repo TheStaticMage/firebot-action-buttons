@@ -14,16 +14,20 @@ export const actionButton: ReplaceVariable = {
                 description: "Get button info for the currently executing button."
             },
             {
+                usage: "actionButton[current]",
+                description: "Get button info for the currently executing button."
+            },
+            {
+                usage: "actionButton[current, backgroundColor]",
+                description: "Get the backgroundColor of the currently executing button."
+            },
+            {
                 usage: "actionButton[button-uuid-123]",
                 description: "Get button info for the specified button UUID."
             },
             {
                 usage: "actionButton[button-uuid-123, name]",
                 description: "Get the name property of the specified button."
-            },
-            {
-                usage: "actionButton[, backgroundColor]",
-                description: "Get the backgroundColor of the currently executing button."
             }
         ],
         description: "Get information about an action button. If uuid is not specified, uses the currently executing button. Returns the full button info object or a specific property.",
@@ -37,15 +41,15 @@ export const actionButton: ReplaceVariable = {
         let buttonId: string | undefined = args[0];
         let propertyName: string | undefined = args[1];
 
-        // If no buttonId or empty string, use current executing button
-        if (!buttonId || buttonId.trim() === '') {
+        // If no buttonId, empty string, or 'current', use current executing button
+        if (!buttonId || buttonId.trim() === '' || buttonId.toLowerCase() === 'current') {
             const actionButtonData = trigger.metadata?.actionButton as ActionButtonMetadata;
             if (!actionButtonData?.stack || actionButtonData.stack.length === 0) {
                 return {};
             }
             buttonId = actionButtonData.stack[0].buttonId;
 
-            // If only one arg and it's empty, treat second arg as property if it exists
+            // If only one arg and it's empty or 'current', treat second arg as property if it exists
             if (args.length >= 2) {
                 propertyName = args[1];
             }

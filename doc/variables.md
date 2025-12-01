@@ -4,13 +4,14 @@ This document describes all replace variables provided by the Action Buttons plu
 
 ## Table of Contents
 
-- [`$actionButtonId`](#actionbuttonid)
-- [`$actionButtonPanelId`](#actionbuttonpanelid)
-- [`$actionButtonName`](#actionbuttonname)
-- [`$actionButtonStack`](#actionbuttonstack)
 - [`$actionButton`](#actionbutton)
-- [`$actionButtonPanel`](#actionbuttonpanel)
 - [`$actionButtonByName`](#actionbuttonbyname)
+- [`$actionButtonId`](#actionbuttonid)
+- [`$actionButtonName`](#actionbuttonname)
+- [`$actionButtonPanel`](#actionbuttonpanel)
+- [`$actionButtonPanelId`](#actionbuttonpanelid)
+- [`$actionButtonStack`](#actionbuttonstack)
+- [`$currentActionButton`](#currentactionbutton)
 
 ## `$actionButtonId`
 
@@ -112,20 +113,21 @@ Most recent button: $objectWalkPath[$arrayElement[$actionButtonStack, 0], button
 
 ## `$actionButton`
 
-Returns detailed information about a specific action button (`$actionButton`).
+Returns detailed information about a specific action button.
 
 **Usage:**
 
 ```text
 $actionButton
+$actionButton[current]
+$actionButton[current, property]
 $actionButton[button-uuid]
 $actionButton[button-uuid, property]
-$actionButton[, property]
 ```
 
 **Parameters:**
 
-- `button-uuid` (optional): The UUID of the button. If not specified or empty, uses the UUID of the currently executing button.
+- `button-uuid` (optional): The UUID of the button. If not specified, empty, or `current`, uses the UUID of the currently executing button.
 - `property` (optional): A specific property to retrieve. If not specified, returns the full button info object.
 
 **Returns:** If a property is specified, returns that property value (or empty string if not found). Otherwise returns an object containing button information.
@@ -147,15 +149,17 @@ $actionButton[, property]
 
 ```text
 $actionButton
+$actionButton[current]
+$actionButton[current, backgroundColor]
 $actionButton[button-uuid-123]
 $actionButton[button-uuid-123, name]
-$actionButton[, backgroundColor]
 $objectWalkPath[$actionButton, stack]
 $objectWalkPath[$actionButton[button-uuid-123], name]
 ```
 
 **Related Variables:**
 
+- [`$currentActionButton`](#currentactionbutton) - Shorthand for current button
 - [`$actionButtonId`](#actionbuttonid) - Get just the current button ID
 - [`$actionButtonPanel`](#actionbuttonpanel) - Get all buttons in a panel
 - [`$actionButtonByName`](#actionbuttonbyname) - Look up a button by name
@@ -219,3 +223,50 @@ $objectWalkPath[$actionButtonByName[panel-123, Click Me], name]
 - [`$actionButton`](#actionbutton) - Get info about a button by UUID
 - [`$actionButtonPanel`](#actionbuttonpanel) - Get all buttons in a panel
 - [`$actionButtonName`](#actionbuttonname) - Get the current button name
+
+## `$currentActionButton`
+
+Returns detailed information about the currently executing action button.
+
+**Usage:**
+
+```text
+$currentActionButton
+$currentActionButton[property]
+```
+
+**Parameters:**
+
+- `property` (optional): A specific property to retrieve. If not specified, returns the full button info object.
+
+**Returns:** If a property is specified, returns that property value (or empty string if not found). Otherwise returns an object containing button information.
+
+**Button Info Object Properties:**
+
+- `uuid` - Button UUID
+- `name` - Button display name
+- `icon` - Font Awesome icon class
+- `backgroundColor` - Background color
+- `foregroundColor` - Foreground color
+- `alignment` - Button alignment (left, center, right)
+- `onClick` - Visibility behavior on click (hideButton, hidePanel, noVisibilityChanges)
+- `extraMetadata` - Custom metadata object
+- `stack` - Call stack array (same as `$actionButtonStack`)
+- `effectCount` - Number of effects attached to the button
+
+**Examples:**
+
+```text
+$currentActionButton
+$currentActionButton[backgroundColor]
+$currentActionButton[name]
+$objectWalkPath[$currentActionButton, extraMetadata]
+```
+
+Note: `$currentActionButton` is equivalent to `$actionButton[current]`, `$currentActionButton[uuid]` is equivalent to `$actionButton[current, uuid]`, etc.
+
+**Related Variables:**
+
+- [`$actionButton`](#actionbutton) - Get info about any button by UUID
+- [`$actionButtonId`](#actionbuttonid) - Get just the current button ID
+- [`$actionButtonName`](#actionbuttonname) - Get just the current button name
