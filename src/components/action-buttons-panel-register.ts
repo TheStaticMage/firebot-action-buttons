@@ -47,33 +47,30 @@ export function registerActionButtonsPanelComponent(): void {
                         </style>
                         <div class="action-buttons-panel">
                             <div style="flex: 1; display: flex; gap: 10px;">
-                                <button ng-repeat="button in buttons | filter:{alignment:'left'} track by button.uuid"
+                                <button ng-repeat="button in buttons | filter:{alignment:'left'} | filter:filterVisible track by button.uuid"
                                         class="action-button"
                                         ng-click="clickButton(button.uuid)"
                                         ng-style="{backgroundColor: button.backgroundColor, color: button.foregroundColor}"
-                                        ng-hide="button.hidden"
                                         title="{{button.name}}">
                                     <i class="{{button.icon}}" ng-if="button.icon"></i>
                                     <span>{{button.name}}</span>
                                 </button>
                             </div>
                             <div style="flex: 0; display: flex; gap: 10px;">
-                                <button ng-repeat="button in buttons | filter:{alignment:'center'} track by button.uuid"
+                                <button ng-repeat="button in buttons | filter:{alignment:'center'} | filter:filterVisible track by button.uuid"
                                         class="action-button"
                                         ng-click="clickButton(button.uuid)"
                                         ng-style="{backgroundColor: button.backgroundColor, color: button.foregroundColor}"
-                                        ng-hide="button.hidden"
                                         title="{{button.name}}">
                                     <i class="{{button.icon}}" ng-if="button.icon"></i>
                                     <span>{{button.name}}</span>
                                 </button>
                             </div>
                             <div style="flex: 1; display: flex; gap: 10px; justify-content: flex-end;">
-                                <button ng-repeat="button in buttons | filter:{alignment:'right'} track by button.uuid"
+                                <button ng-repeat="button in buttons | filter:{alignment:'right'} | filter:filterVisible track by button.uuid"
                                         class="action-button"
                                         ng-click="clickButton(button.uuid)"
                                         ng-style="{backgroundColor: button.backgroundColor, color: button.foregroundColor}"
-                                        ng-hide="button.hidden"
                                         title="{{button.name}}">
                                     <i class="{{button.icon}}" ng-if="button.icon"></i>
                                     <span>{{button.name}}</span>
@@ -164,6 +161,10 @@ export function registerActionButtonsPanelComponent(): void {
                                 backgroundColor: button.backgroundColor,
                                 color: button.foregroundColor
                             };
+                        };
+
+                        $scope.filterVisible = function(button: any) {
+                            return !button.hidden;
                         };
 
                         $scope.clickButton = async function(uuid: string) {
