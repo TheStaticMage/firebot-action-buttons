@@ -9,7 +9,6 @@ import { registerReplaceVariables } from './variables';
 
 export let firebot: RunRequest<any>;
 export let logger: LogWrapper;
-export let customChatPanelManager: any;
 
 const pluginName = 'action-buttons';
 const scriptVersion = '0.0.1';

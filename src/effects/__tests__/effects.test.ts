@@ -12,12 +12,16 @@ jest.mock('../../main', () => ({
         debug: jest.fn(),
         warn: jest.fn()
     },
-    customChatPanelManager: {
-        injectPanel: jest.fn(),
-        removePanel: jest.fn()
-    },
     firebot: {
         modules: {}
+    }
+}));
+
+jest.mock('../../internal/custom-chat-panel-manager', () => ({
+    customChatPanelManager: {
+        injectPanel: jest.fn(),
+        getPanel: jest.fn(),
+        removePanel: jest.fn()
     }
 }));
 

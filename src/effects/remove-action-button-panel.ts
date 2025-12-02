@@ -1,6 +1,7 @@
 import { Firebot } from '@crowbartools/firebot-custom-scripts-types';
-import { logger, customChatPanelManager } from '../main';
+import { logger } from '../main';
 import { actionButtonManager } from '../internal/action-button-manager';
+import { customChatPanelManager } from '../internal/custom-chat-panel-manager';
 
 interface EffectModel {
     panelId: string;

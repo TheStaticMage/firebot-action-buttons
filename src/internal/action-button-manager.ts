@@ -11,6 +11,7 @@ import {
     ActionButtonDisplay,
     OnClickVisibility
 } from './action-button-types';
+import { customChatPanelManager } from './custom-chat-panel-manager';
 
 type ProcessEffectsRequest = Parameters<EffectRunner['processEffects']>[0];
 
@@ -169,11 +170,6 @@ export class ActionButtonManager {
     private hidePanel(panelId: string): void {
         logger.debug(`Hiding panel ${panelId}`);
 
-        const { customChatPanelManager } = firebot.modules;
-        if (!customChatPanelManager) {
-            logger.error('customChatPanelManager is not available');
-            return;
-        }
         customChatPanelManager.updatePanel({
             panelId,
             updates: {
@@ -254,13 +250,6 @@ export class ActionButtonManager {
     }
 
     public async getPanelVisibility(panelId: string): Promise<boolean> {
-        const { customChatPanelManager } = firebot.modules;
-
-        if (!customChatPanelManager) {
-            logger.error('customChatPanelManager is not available');
-            return false;
-        }
-
         try {
             const panel = await customChatPanelManager.getPanel(panelId);
             if (!panel) {
@@ -278,11 +267,6 @@ export class ActionButtonManager {
     public setPanelVisibility(panelId: string, visible: boolean): void {
         logger.debug(`Setting panel ${panelId} visibility to ${visible}`);
 
-        const { customChatPanelManager } = firebot.modules;
-        if (!customChatPanelManager) {
-            logger.error('customChatPanelManager is not available');
-            return;
-        }
         customChatPanelManager.updatePanel({
             panelId,
             updates: {

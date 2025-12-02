@@ -10,10 +10,6 @@ jest.mock('../../main', () => ({
     },
     firebot: {
         modules: {
-            customChatPanelManager: {
-                getPanel: jest.fn(),
-                updatePanel: jest.fn()
-            },
             frontendCommunicator: {
                 send: jest.fn()
             },
@@ -24,8 +20,16 @@ jest.mock('../../main', () => ({
     }
 }));
 
+jest.mock('../custom-chat-panel-manager', () => ({
+    customChatPanelManager: {
+        getPanel: jest.fn(),
+        updatePanel: jest.fn()
+    }
+}));
+
 import { actionButtonManager } from '../action-button-manager';
 import { firebot } from '../../main';
+import { customChatPanelManager } from '../custom-chat-panel-manager';
 
 describe('ActionButtonManager', () => {
     beforeEach(() => {
@@ -39,6 +43,11 @@ describe('ActionButtonManager', () => {
         if (panelButtons instanceof Map) {
             panelButtons.clear();
         }
+        const getPanel = customChatPanelManager.getPanel as jest.Mock;
+        getPanel.mockReset();
+        getPanel.mockResolvedValue(null);
+        const updatePanel = customChatPanelManager.updatePanel as jest.Mock;
+        updatePanel.mockReset();
     });
 
     describe('processActionButtons', () => {

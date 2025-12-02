@@ -1,9 +1,9 @@
 import { Firebot } from '@crowbartools/firebot-custom-scripts-types';
 import { EffectScope } from '@crowbartools/firebot-custom-scripts-types/types/effects';
-import { CustomChatPanelPosition, InjectChatPanelData } from '@crowbartools/firebot-custom-scripts-types/types/modules/custom-chat-panel-manager';
 import { randomUUID } from 'crypto';
 import { actionButtonManager } from '../internal/action-button-manager';
 import { ActionButtonDefinition } from '../internal/action-button-types';
+import { customChatPanelManager, CustomChatPanelPosition, InjectChatPanelData } from '../internal/custom-chat-panel-manager';
 import { firebot, logger } from '../main';
 
 interface EffectModel {
@@ -169,6 +169,11 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
         logger.debug(`Generated new panel ID: ${panelId}`);
 
         try {
+            if (!firebot.modules?.frontendCommunicator) {
+                logger.error('frontendCommunicator is not available');
+                return errorResponse;
+            }
+
             const displayButtons = actionButtonManager.processActionButtons(
                 effect.actionButtons,
                 panelId,
@@ -177,13 +182,6 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             );
 
             logger.debug(`Processed ${displayButtons.length} display buttons`);
-
-            const { customChatPanelManager } = firebot.modules;
-
-            if (!customChatPanelManager) {
-                logger.error('customChatPanelManager is not available');
-                return errorResponse;
-            }
 
             let position: CustomChatPanelPosition = 'append';
             if (effect.positionType === 'prepend') {

@@ -2,6 +2,7 @@ import { Firebot } from '@crowbartools/firebot-custom-scripts-types';
 import { EffectScope } from '@crowbartools/firebot-custom-scripts-types/types/effects';
 import { actionButtonManager } from '../internal/action-button-manager';
 import { ActionButtonDefinition } from '../internal/action-button-types';
+import { customChatPanelManager } from '../internal/custom-chat-panel-manager';
 import { firebot, logger } from '../main';
 
 interface EffectModel {
@@ -87,10 +88,9 @@ export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
         }
 
         try {
-            const { customChatPanelManager, frontendCommunicator } = firebot.modules;
-
-            if (!customChatPanelManager) {
-                logger.error('customChatPanelManager is not available');
+            const { frontendCommunicator } = firebot.modules;
+            if (!frontendCommunicator) {
+                logger.error('frontendCommunicator is not available');
                 return errorResponse;
             }
 
