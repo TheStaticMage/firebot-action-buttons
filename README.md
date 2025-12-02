@@ -4,11 +4,9 @@ This [Firebot](https://firebot.app) plugin allows streamers to add interactive b
 
 ![Screenshot](/doc/screenshot.png)
 
-## :warning: :warning: Compatibility Notice :warning: :warning:
+## Compatibility
 
-This is a prerelease plugin that depends on features that are proposed but not yet added to Firebot.
-
-Despite any statements to the contrary, this will not work on any unmodified release version of Firebot at this time.
+:warning: This plugin depends on features that do not exist yet in Firebot ([feature request here](https://github.com/crowbartools/Firebot/issues/3347)). I have implemented these features in a custom fork of Firebot to enable this plugin. **This plugin will not work properly on out-of-the-box Firebot.** Be aware that running a custom fork of Firebot comes with risks: no support from anyone, the risk of becoming "stuck" if I disappear and no longer keep this up-to-date, and a much narrower audience to discover potential bugs. If you do not fully understand these risks or are not comfortable digging into the code to investigate and fix problems, you should not use this.
 
 ## Features
 

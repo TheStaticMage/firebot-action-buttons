@@ -10,7 +10,9 @@
 
 | Plugin Version | Minimum Firebot Version |
 | --- | --- |
-| 0.0.1+ | 5.65 |
+| 0.0.1+ | [Mage Firebot Fork v5.65.0_Mage24+](https://github.com/TheStaticMage/firebot-fork-builder/releases) |
+
+:warning: This plugin depends on features that do not exist yet in Firebot ([feature request here](https://github.com/crowbartools/Firebot/issues/3347)). I have implemented these features in a custom fork of Firebot to enable this plugin. **This plugin will not work properly on out-of-the-box Firebot.** Be aware that running a custom fork of Firebot comes with risks: no support from anyone, the risk of becoming "stuck" if I disappear and no longer keep this up-to-date, and a much narrower audience to discover potential bugs. If you do not fully understand these risks or are not comfortable digging into the code to investigate and fix problems, you should not use this.
 
 ## Upgrade Procedure
 
