@@ -13,6 +13,10 @@ export let logger: LogWrapper;
 const pluginName = 'action-buttons';
 const scriptVersion = '0.0.1';
 
+type ForkAwareFirebot = RunRequest<any>['firebot'] & {
+    mageForkVersion?: string | number;
+};
+
 const script: Firebot.CustomScript<any> = {
     getScriptManifest: () => {
         return {
@@ -40,6 +44,17 @@ const script: Firebot.CustomScript<any> = {
         logger.debug(`Detected Firebot version: ${fbVersion}`);
         if (!satisfies(fbVersion, ">= 5.65.0-0", { includePrerelease: true })) {
             logger.error(`${pluginName} requires Firebot version 5.65.0 or higher (including prereleases). Detected version: ${fbVersion}. Please update Firebot to use this plugin.`);
+            return;
+        }
+
+        // Check Firebot fork compatibility
+        const forkInfo = firebot.firebot as ForkAwareFirebot;
+        const forkVersionRaw = forkInfo.mageForkVersion;
+        const forkVersion = Number(forkVersionRaw);
+        logger.debug(`Detected Firebot fork marker: ${forkVersionRaw ?? 'absent'}`);
+
+        if (!Number.isFinite(forkVersion) || forkVersion <= 0) {
+            logger.error(`${pluginName} requires TheStaticMage's Firebot fork. Detected Firebot without fork metadata. Please install the forked Firebot build to use this plugin. Details: https://github.com/TheStaticMage/firebot-action-buttons/?tab=readme-ov-file#compatibility`);
             return;
         }
 
