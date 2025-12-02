@@ -4,12 +4,15 @@ import { firebot, logger } from '../main';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { JSDOM } from 'jsdom';
+import type { EffectRunner } from '@crowbartools/firebot-custom-scripts-types/types/modules/effect-runner';
 import {
     ActionButtonConfig,
     ActionButtonDefinition,
     ActionButtonDisplay,
     OnClickVisibility
 } from './action-button-types';
+
+type ProcessEffectsRequest = Parameters<EffectRunner['processEffects']>[0];
 
 export class ActionButtonManager {
     private buttonStore: Map<string, ActionButtonConfig> = new Map<string, ActionButtonConfig>();
@@ -23,7 +26,8 @@ export class ActionButtonManager {
     processActionButtons(
         definitions: ActionButtonDefinition[],
         panelId: string,
-        trigger: any
+        trigger: any,
+        outputs?: Record<string, any>
     ): ActionButtonDisplay[] {
         logger.debug(`Processing ${definitions.length} action buttons for panel ${panelId}`);
 
@@ -50,6 +54,8 @@ export class ActionButtonManager {
                 effectListCopy.id = uuid;
             }
 
+            const outputsCopy = this.cloneOutputs(outputs);
+
             // Register button config
             const config: ActionButtonConfig = {
                 uuid,
@@ -59,7 +65,8 @@ export class ActionButtonManager {
                 effectList: effectListCopy,
                 trigger,
                 timestamp,
-                extraMetadata: parsedMetadata
+                extraMetadata: parsedMetadata,
+                outputs: outputsCopy
             };
             this.registerButton(uuid, config);
 
@@ -86,6 +93,10 @@ export class ActionButtonManager {
     getPanelButtons(panelId: string): ActionButtonDisplay[] {
         const buttons = this.panelButtons.get(panelId) || [];
         return buttons;
+    }
+
+    getTrackedPanelIds(): Set<string> {
+        return new Set(this.panelButtons.keys());
     }
 
     getButtonInfoByPanelId(panelId: string): Record<string, any> {
@@ -344,10 +355,17 @@ export class ActionButtonManager {
 
         // Execute the effect list with proper structure
         try {
-            await effectRunner.processEffects({
+            const outputs = this.cloneOutputs(config.outputs);
+            const effectRequest: ProcessEffectsRequest = {
                 trigger,
                 effects: config.effectList
-            });
+            };
+
+            if (outputs !== undefined) {
+                effectRequest.outputs = outputs;
+            }
+
+            await effectRunner.processEffects(effectRequest);
         } catch (error) {
             logger.error(`Failed to execute effects for button ${uuid}: ${error}`);
         }
@@ -487,6 +505,29 @@ export class ActionButtonManager {
 
     private generateUuid(): string {
         return randomUUID();
+    }
+
+    private cloneOutputs(outputs?: Record<string, any>): Record<string, any> | undefined {
+        if (outputs === undefined) {
+            return undefined;
+        }
+
+        const structuredCloneFn = (globalThis as { structuredClone?: <T>(value: T) => T }).structuredClone;
+
+        if (typeof structuredCloneFn === 'function') {
+            try {
+                return structuredCloneFn(outputs);
+            } catch (error) {
+                logger.warn(`Failed to clone outputs with structuredClone: ${error}`);
+            }
+        }
+
+        try {
+            return JSON.parse(JSON.stringify(outputs));
+        } catch (error) {
+            logger.warn(`Failed to clone outputs: ${error}`);
+            return undefined;
+        }
     }
 }
 

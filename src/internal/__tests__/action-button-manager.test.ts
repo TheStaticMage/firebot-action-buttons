@@ -25,9 +25,11 @@ jest.mock('../../main', () => ({
 }));
 
 import { actionButtonManager } from '../action-button-manager';
+import { firebot } from '../../main';
 
 describe('ActionButtonManager', () => {
     beforeEach(() => {
+        jest.clearAllMocks();
         // Clear state before each test
         const store = (actionButtonManager as any).buttonStore;
         if (store instanceof Map) {
@@ -295,6 +297,44 @@ describe('ActionButtonManager', () => {
             // Set it back to visible
             actionButtonManager.setButtonVisibility(buttonUuid, true, false);
             expect(actionButtonManager.getButtonVisibility(buttonUuid)).toBe(true);
+        });
+    });
+
+    describe('clickButton', () => {
+        it('should pass stored outputs into effect execution', async () => {
+            const definitions: ActionButtonDefinition[] = [
+                {
+                    name: 'Output Test Button',
+                    backgroundColor: '#FF0000FF',
+                    foregroundColor: '#FFFFFFFF',
+                    icon: 'fas fa-star',
+                    alignment: 'center',
+                    onClick: 'noVisibilityChanges',
+                    effectList: { list: [] }
+                }
+            ];
+
+            const initialOutputs = {
+                message: 'hello world',
+                nested: { count: 3 }
+            };
+
+            const displayButtons = actionButtonManager.processActionButtons(
+                definitions,
+                'panel-with-outputs',
+                {},
+                initialOutputs
+            );
+            const buttonUuid = displayButtons[0].uuid;
+
+            await actionButtonManager.clickButton(buttonUuid);
+
+            const processEffects = firebot.modules.effectRunner.processEffects as jest.Mock;
+            expect(processEffects).toHaveBeenCalledTimes(1);
+            const effectArgs = processEffects.mock.calls[0][0];
+
+            expect(effectArgs.outputs).toEqual(initialOutputs);
+            expect(effectArgs.outputs).not.toBe(initialOutputs);
         });
     });
 });

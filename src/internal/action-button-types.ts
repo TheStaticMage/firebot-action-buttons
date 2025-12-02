@@ -35,6 +35,7 @@ export interface ActionButtonConfig {
     trigger: any;
     timestamp: number;
     extraMetadata?: Record<string, any>;
+    outputs?: Record<string, any>;
 }
 
 export interface ActionButtonStackEntry {

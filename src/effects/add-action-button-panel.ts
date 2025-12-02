@@ -172,7 +172,8 @@ export const addActionButtonPanelEffect: Firebot.EffectType<EffectModel> = {
             const displayButtons = actionButtonManager.processActionButtons(
                 effect.actionButtons,
                 panelId,
-                event.trigger
+                event.trigger,
+                event.outputs
             );
 
             logger.debug(`Processed ${displayButtons.length} display buttons`);

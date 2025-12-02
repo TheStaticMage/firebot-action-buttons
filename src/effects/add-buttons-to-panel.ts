@@ -87,15 +87,28 @@ export const addButtonsToPanelEffect: Firebot.EffectType<EffectModel> = {
         }
 
         try {
+            const { customChatPanelManager, frontendCommunicator } = firebot.modules;
+
+            if (!customChatPanelManager) {
+                logger.error('customChatPanelManager is not available');
+                return errorResponse;
+            }
+
+            const panel = await customChatPanelManager.getPanel(panelId);
+            if (!panel) {
+                logger.error(`Panel ${panelId} does not exist`);
+                return errorResponse;
+            }
+
             const displayButtons = actionButtonManager.processActionButtons(
                 effect.actionButtons,
                 panelId,
-                event.trigger
+                event.trigger,
+                event.outputs
             );
 
             logger.debug(`Processed ${displayButtons.length} display buttons for panel ${panelId}`);
 
-            const { frontendCommunicator } = firebot.modules;
             frontendCommunicator.send('action-buttons:panel-updated', panelId);
 
             logger.info(`Successfully added ${displayButtons.length} buttons to panel ${panelId}`);
