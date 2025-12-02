@@ -79,7 +79,7 @@ export function registerActionButtonsPanelComponent(): void {
                                 <span ng-if="messageIcon" class="panel-message-icon">
                                     <i ng-class="getIconClass(messageIcon)"></i>
                                 </span>
-                                <span ng-if="messageText" class="panel-message-text" ng-bind-html="getMessageHtml(messageText)"></span>
+                                <span ng-if="messageText" class="panel-message-text" ng-bind-html="sanitizedMessageHtml"></span>
                             </div>
                             <div class="action-buttons-panel" ng-class="{'with-message': hasMessage}">
                             <div style="flex: 1; display: flex; gap: 10px;">
@@ -137,11 +137,18 @@ export function registerActionButtonsPanelComponent(): void {
                             return classes.join(' ');
                         };
 
-                        $scope.getMessageHtml = function(text: string) {
+                        $scope.sanitizedMessageHtml = '';
+
+                        const renderMessageHtml = (text: string) => {
                             if (!text) {
                                 return '';
                             }
-                            return backendCommunicator.fireEventSync('action-buttons:render-markdown', text);
+                            try {
+                                return backendCommunicator.fireEventSync('action-buttons:render-markdown', text);
+                            } catch (error) {
+                                logger.error(`[Frontend:${instanceId}] Failed to render message markdown: ${error}`);
+                                return text;
+                            }
                         };
 
                         const loadButtonsForPanel = (panelId: string) => {
@@ -171,25 +178,53 @@ export function registerActionButtonsPanelComponent(): void {
                             }
                         };
 
-                        const checkForData = () => {
+                        const syncComponentData = () => {
                             const data = $scope.$parent?.componentData;
-                            if (data && data.panelId) {
-                                loadButtonsForPanel(data.panelId);
-
-                                $scope.hasMessage = data.hasMessage || false;
-                                $scope.messageText = data.messageText || '';
-                                $scope.messageIcon = data.messageIcon || '';
-                                $scope.backgroundColor = data.backgroundColor;
+                            if (!data || !data.panelId) {
+                                return;
                             }
+
+                            loadButtonsForPanel(data.panelId);
+
+                            $scope.hasMessage = data.hasMessage || false;
+                            $scope.messageText = data.messageText || '';
+                            $scope.messageIcon = data.messageIcon || '';
+                            $scope.backgroundColor = data.backgroundColor;
+                            $scope.sanitizedMessageHtml = $scope.messageText ? renderMessageHtml($scope.messageText) : '';
                         };
 
-                        checkForData();
+                        syncComponentData();
 
-                        $scope.$watch(() => $scope.$parent?.componentData, (newVal: any) => {
-                            if (newVal && newVal.panelId) {
-                                loadButtonsForPanel(newVal.panelId);
+                        $scope.$watch(() => $scope.$parent?.componentData?.panelId, (newVal: string, oldVal: string) => {
+                            if (newVal && newVal !== oldVal) {
+                                loadButtonsForPanel(newVal);
                             }
-                        }, true);
+                        });
+
+                        $scope.$watch(() => $scope.$parent?.componentData?.messageText, (newVal: string, oldVal: string) => {
+                            if (newVal !== oldVal) {
+                                $scope.messageText = newVal || '';
+                                $scope.sanitizedMessageHtml = $scope.messageText ? renderMessageHtml($scope.messageText) : '';
+                            }
+                        });
+
+                        $scope.$watch(() => $scope.$parent?.componentData?.messageIcon, (newVal: string, oldVal: string) => {
+                            if (newVal !== oldVal) {
+                                $scope.messageIcon = newVal || '';
+                            }
+                        });
+
+                        $scope.$watch(() => $scope.$parent?.componentData?.hasMessage, (newVal: boolean, oldVal: boolean) => {
+                            if (newVal !== oldVal) {
+                                $scope.hasMessage = newVal;
+                            }
+                        });
+
+                        $scope.$watch(() => $scope.$parent?.componentData?.backgroundColor, (newVal: string, oldVal: string) => {
+                            if (newVal !== oldVal) {
+                                $scope.backgroundColor = newVal;
+                            }
+                        });
 
                         backendCommunicator.on('action-buttons:panel-updated', (panelId: string) => {
                             if (panelId === $scope.$parent?.componentData?.panelId) {
