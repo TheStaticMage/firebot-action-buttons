@@ -50,12 +50,22 @@ const script: Firebot.CustomScript<any> = {
         // Check Firebot fork compatibility
         const forkInfo = firebot.firebot as ForkAwareFirebot;
         const forkVersionRaw = forkInfo.mageForkVersion;
-        const forkVersion = Number(forkVersionRaw);
         logger.debug(`Detected Firebot fork marker: ${forkVersionRaw ?? 'absent'}`);
 
-        if (!Number.isFinite(forkVersion) || forkVersion <= 0) {
-            logger.error(`${pluginName} requires TheStaticMage's Firebot fork. Detected Firebot without fork metadata. Please install the forked Firebot build to use this plugin. Details: https://github.com/TheStaticMage/firebot-action-buttons/?tab=readme-ov-file#compatibility`);
+        if (forkVersionRaw === undefined) {
+            logger.error(`${pluginName} requires TheStaticMage's Firebot fork. Detected standard Firebot build. Please install the forked Firebot build to use this plugin. Details: https://github.com/TheStaticMage/firebot-action-buttons/?tab=readme-ov-file#compatibility`);
             return;
+        }
+
+        const forkVersion = Number(forkVersionRaw);
+        if (Number.isNaN(forkVersion) || typeof forkVersionRaw !== 'number') {
+            logger.error(`${pluginName} requires TheStaticMage's Firebot fork. Could not parse fork version (got: ${JSON.stringify(forkVersionRaw)}). Please install the forked Firebot build to use this plugin. Details: https://github.com/TheStaticMage/firebot-action-buttons/?tab=readme-ov-file#compatibility`);
+            return;
+        }
+
+
+        if (forkVersion === 0) {
+            logger.info(`Detected Firebot fork version running from source. Unable to verify compatibility. If something doesn't work as expected, please ensure you are using the latest version of TheStaticMage's Firebot fork.`);
         }
 
         actionButtonManager.setupListeners();
