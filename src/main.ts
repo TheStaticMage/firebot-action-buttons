@@ -58,7 +58,7 @@ const script: Firebot.CustomScript<any> = {
         }
 
         const forkVersion = Number(forkVersionRaw);
-        if (Number.isNaN(forkVersion) || typeof forkVersionRaw !== 'number') {
+        if (Number.isNaN(forkVersion)) {
             logger.error(`${pluginName} requires TheStaticMage's Firebot fork. Could not parse fork version (got: ${JSON.stringify(forkVersionRaw)}). Please install the forked Firebot build to use this plugin. Details: https://github.com/TheStaticMage/firebot-action-buttons/?tab=readme-ov-file#compatibility`);
             return;
         }
