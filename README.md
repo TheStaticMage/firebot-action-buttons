@@ -1,12 +1,19 @@
 # Firebot Action Buttons
 
+## Deprecation Notice
+
+This plugin is not tested with Firebot 5.67 or later and will no longer be developed. No support or updates will be provided. Code and documentation remain archived here for reference purposes only.
+
+## Introduction
+
 This [Firebot](https://firebot.app) plugin allows streamers to add interactive buttons directly in their chat feed to trigger custom actions.
 
 ![Screenshot](/doc/screenshot.png)
-
+<!--
 ## Compatibility
 
 :warning: This plugin depends on features that do not exist yet in Firebot ([feature request here](https://github.com/crowbartools/Firebot/issues/3347)). I have implemented these features in a custom fork of Firebot to enable this plugin. **This plugin will not work properly on out-of-the-box Firebot.** Be aware that running a custom fork of Firebot comes with risks: no support from anyone, the risk of becoming "stuck" if I disappear and no longer keep this up-to-date, and a much narrower audience to discover potential bugs. If you do not fully understand these risks or are not comfortable digging into the code to investigate and fix problems, you should not use this. You can run from source from this branch: <https://github.com/TheStaticMage/Firebot/tree/running-release>. I do not publicly distribute compiled versions.
+-->
 
 ## Features
 
@@ -21,7 +28,7 @@ This [Firebot](https://firebot.app) plugin allows streamers to add interactive b
 - [Installation](/doc/installation.md)
 - [Upgrading](/doc/upgrading.md)
 - [Tutorial: Approve Channel Reward Requests](/doc/tutorial-basics.md)
-
+<!--
 ## Support
 
 The best way to get help is in my Discord server. Join [The Static Discord](https://discord.gg/rCYE2ywwzx) and visit the `#firebot-action-buttons` channel.
@@ -44,3 +51,4 @@ If you use this on your stream, I would appreciate a shout-out. (Appreciated, bu
 - <https://www.twitch.tv/thestaticmage>
 - <https://kick.com/thestaticmage>
 - <https://youtube.com/@thestaticmagerisk>
+-->
